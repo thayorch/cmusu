@@ -285,11 +285,23 @@ const submitForm = async () => {
   errorMessage.value = "";
 
   try {
+    const csrfRes = await fetch("/api/csrf-token", {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (!csrfRes.ok) throw new Error("ไม่สามารถเชื่อมต่อระบบความปลอดภัยได้");
+
+    const csrfData = await csrfRes.json();
+    const csrfToken = csrfData.csrf_token;
+
     const response = await fetch("/api/report", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken,
       },
+      credentials: "include",
       body: JSON.stringify(formData),
     });
 
@@ -297,7 +309,6 @@ const submitForm = async () => {
       throw new Error(`เกิดข้อผิดพลาด: ${response.status}`);
     }
 
-    // สมมติว่าการส่งข้อมูลสำเร็จ
     const result = await response.json();
 
     alert("ส่งข้อมูลเรียบร้อยแล้ว ขอบคุณสำหรับข้อเสนอแนะครับ/ค่ะ");
