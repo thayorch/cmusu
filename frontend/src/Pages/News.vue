@@ -191,12 +191,15 @@ import {
   FireIcon,
   CalendarDaysIcon,
   ArrowRightIcon,
-  SparklesIcon, // 👈 อย่าลืม Import ไอคอนตัวนี้มาด้วย
+  SparklesIcon,
 } from "@heroicons/vue/24/solid";
 
+// เตรียม Map สำหรับแปลงชื่อ Icon
 const iconMap = {
-  SparklesIcon: SparklesIcon,
-  NewspaperIcon: NewspaperIcon,
+  SparklesIcon,
+  NewspaperIcon,
+  BellAlertIcon,
+  FireIcon,
 };
 
 const meta = [
@@ -210,26 +213,16 @@ const errorMessage = ref("");
 
 onMounted(async () => {
   try {
-    isLoading.value = true;
-
-    const response = await fetch("/api/news", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`เกิดข้อผิดพลาด: ${response.status}`);
-    }
+    const response = await fetch("/api/news");
+    if (!response.ok) throw new Error("โหลดข้อมูลไม่สำเร็จ");
 
     const result = await response.json();
-
-    // 4. นำข้อมูลที่ได้ไปใส่ในตัวแปร newsGroups
-    newsGroups.value = result.data;
+    if (result.status === "success") {
+      newsGroups.value = result.data;
+    }
   } catch (error) {
-    console.error("Error loading news:", error);
-    errorMessage.value = "ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง";
+    console.error(error);
+    errorMessage.value = "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้";
   } finally {
     isLoading.value = false;
   }

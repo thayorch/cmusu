@@ -6,6 +6,8 @@ const Activity = () => import("../Pages/Activity.vue");
 const News = () => import("../Pages/News.vue");
 const Borrow = () => import("../Pages/Borrow.vue");
 const Report = () => import("../Pages/Report.vue");
+const BorrowCentral = () => import("../Pages/BorrowCentral.vue");
+const BorrowFaculty = () => import("../Pages/BorrowFaculty.vue");
 
 const routes = [
   {
@@ -32,6 +34,14 @@ const routes = [
   {
     path: "/admin",
     component: Admin,
+  },
+  {
+    path: "/borrow-central",
+    component: BorrowCentral,
+  },
+  {
+    path: "/borrow-faculty",
+    component: BorrowFaculty,
   },
 ];
 

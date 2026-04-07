@@ -1,3 +1,4 @@
+from ctypes.wintypes import tagSIZE
 from sys import prefix
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,7 +9,7 @@ import os
 from dotenv import load_dotenv
 
 from core.config import CsrfSettings
-from routers import reports, news, csrf, activity
+from routers import reports, news, csrf, activity, borrow, auth
 
 load_dotenv()
 
@@ -45,6 +46,8 @@ def csrf_protect_exception_handler(request: Request, exc: CsrfProtectError):
 # ==========================================
 # นำ Router ที่แยกไว้มาเชื่อมต่อกับ App หลัก
 # ==========================================
+app.include_router(auth.router, prefix="/api", tags=["Auth"])
+app.include_router(borrow.router, prefix="/api", tags=["Borrow"])
 app.include_router(csrf.router, prefix="/api", tags=["Csrf"])
 app.include_router(reports.router, prefix="/api", tags=["Reports"])
 app.include_router(news.router, prefix="/api", tags=["News"])
@@ -57,8 +60,8 @@ async def health_check():
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to CMUSU backend!!", "health": "/api/health"}
-
+    return {"message": "Backend is running!"}
+    
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))
