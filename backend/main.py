@@ -1,3 +1,4 @@
+from sys import prefix
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -6,9 +7,8 @@ from fastapi_csrf_protect.exceptions import CsrfProtectError
 import os
 from dotenv import load_dotenv
 
-# Import สิ่งที่เราแยกไฟล์ไว้
 from core.config import CsrfSettings
-from routers import reports
+from routers import reports, news, csrf, activity
 
 load_dotenv()
 
@@ -45,7 +45,10 @@ def csrf_protect_exception_handler(request: Request, exc: CsrfProtectError):
 # ==========================================
 # นำ Router ที่แยกไว้มาเชื่อมต่อกับ App หลัก
 # ==========================================
+app.include_router(csrf.router, prefix="/api", tags=["Csrf"])
 app.include_router(reports.router, prefix="/api", tags=["Reports"])
+app.include_router(news.router, prefix="/api", tags=["News"])
+app.include_router(activity.router, prefix="/api", tags=["Activity"])
 
 
 @app.get("/api/health")

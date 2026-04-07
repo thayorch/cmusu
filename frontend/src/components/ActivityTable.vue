@@ -38,7 +38,15 @@
       </div>
     </div>
 
-    <div class="relative">
+    <div v-if="isLoading" class="text-center py-20 text-[#8b7bae]">
+      กำลังโหลดข้อมูลกิจกรรม...
+    </div>
+
+    <div v-else-if="errorMessage" class="text-center py-20 text-red-500">
+      {{ errorMessage }}
+    </div>
+
+    <div v-else class="relative">
       <div
         class="absolute top-0 bottom-0 w-0.5 rounded-full pointer-events-none"
         style="
@@ -101,7 +109,7 @@
             <div class="flex items-start justify-between gap-3 mb-2">
               <div class="flex items-center gap-3">
                 <component
-                  :is="item.icon"
+                  :is="iconMap[item.icon]"
                   class="w-7 h-7 select-none shrink-0"
                   :style="{ color: item.color }"
                   style="filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))"
@@ -152,6 +160,8 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from "vue";
+import Navbar from "../components/Navbar.vue";
 import {
   MegaphoneIcon,
   AcademicCapIcon,
@@ -178,230 +188,63 @@ import {
   ClockIcon,
 } from "@heroicons/vue/24/solid";
 
+// สร้าง Map เพื่อแปลงชื่อ Icon (String) จาก Database ให้เป็น Component จริง
+const iconMap = {
+  TicketIcon,
+  TruckIcon,
+  UserGroupIcon,
+  HeartIcon,
+  BriefcaseIcon,
+  BookOpenIcon,
+  MoonIcon,
+  StarIcon,
+  FireIcon,
+  FlagIcon,
+  ComputerDesktopIcon,
+  ShoppingBagIcon,
+  PaintBrushIcon,
+  ShieldCheckIcon,
+  GiftIcon,
+  GlobeAltIcon,
+  ChatBubbleLeftRightIcon,
+};
+
 const meta = [
   { icon: AcademicCapIcon, text: "ปีการศึกษา 2569", color: "#A259FF" },
   { icon: MapPinIcon, text: "มหาวิทยาลัยเชียงใหม่", color: "#5BC8FF" },
   { icon: SparklesIcon, text: "รวม 18 กิจกรรมหลัก", color: "#FF6EC7" },
 ];
 
-// จัดกลุ่มข้อมูลตามเดือนและกิจกรรมต่อเนื่อง
-const scheduleGroups = [
-  {
-    month: "มิถุนายน 2569",
-    color: "#FFD166",
-    events: [
-      {
-        time: "01",
-        phase: "6-7 มิ.ย.",
-        icon: TicketIcon,
-        title: "รับน้องรถไฟ",
-        desc: "ภายในประเทศไทย",
-        color: "#FFD166",
-        highlight: true,
-      },
-      {
-        time: "02",
-        phase: "15-30 มิ.ย.",
-        icon: TruckIcon,
-        title: "สมช สัญจร",
-        desc: "ภายในมหาวิทยาลัยเชียงใหม่",
-        color: "#A259FF",
-        highlight: false,
-      },
-      {
-        time: "03",
-        phase: "20-21 มิ.ย.",
-        icon: UserGroupIcon,
-        title: "เปิดโลกกิจกรรม FirstMeet FirstStep",
-        desc: "ลานหน้าอาคารพละ",
-        color: "#5BC8FF",
-        highlight: true,
-      },
-      {
-        time: "04",
-        phase: "24-25 มิ.ย.",
-        icon: HeartIcon,
-        title: "Pride month",
-        desc: "ศูนย์อาหาร",
-        color: "#FF6EC7",
-        highlight: true,
-      },
-      {
-        time: "05",
-        phase: "28 มิ.ย.",
-        icon: BriefcaseIcon,
-        title: "CMUSU X SCG",
-        desc: "คณะวิศวกรรมศาสตร์",
-        color: "#06D6A0",
-        highlight: false,
-      },
-    ],
-  },
-  {
-    month: "กรกฎาคม 2569",
-    color: "#5BC8FF",
-    events: [
-      {
-        time: "06",
-        phase: "2 ก.ค.",
-        icon: BookOpenIcon,
-        title: "วันไหว้ครู",
-        desc: "ศาลาธรรม",
-        color: "#FFD166",
-        highlight: true,
-      },
-      {
-        time: "07",
-        phase: "16 ก.ค.",
-        icon: BriefcaseIcon,
-        title: "CMU JOBFAIR",
-        desc: "ลานสังคีต",
-        color: "#5BC8FF",
-        highlight: true,
-      },
-    ],
-  },
-  {
-    month: "สิงหาคม 2569",
-    color: "#A259FF",
-    events: [
-      {
-        time: "08",
-        phase: "7-9 ส.ค.",
-        icon: MoonIcon,
-        title: "CMU Freshmen Night",
-        desc: "หอประชุมมหาวิทยาลัยเชียงใหม่",
-        color: "#A259FF",
-        highlight: true,
-      },
-    ],
-  },
-  {
-    month: "กันยายน 2569",
-    color: "#FF6EC7",
-    events: [
-      {
-        time: "09",
-        phase: "25 ก.ย.",
-        icon: StarIcon,
-        title: "CMU ALL STAR",
-        desc: "ลานสังคีต",
-        color: "#FF6EC7",
-        highlight: true,
-      },
-    ],
-  },
-  {
-    month: "ตุลาคม 2569",
-    color: "#06D6A0",
-    events: [
-      {
-        time: "10",
-        phase: "4 ต.ค.",
-        icon: FireIcon,
-        title: "CMU RUN TRAIL",
-        desc: "สวนสัตว์เชียงใหม่",
-        color: "#06D6A0",
-        highlight: true,
-      },
-    ],
-  },
-  {
-    month: "พฤศจิกายน 2569",
-    color: "#FFD166",
-    events: [
-      {
-        time: "11",
-        phase: "21 พ.ย.",
-        icon: FlagIcon,
-        title: "รับน้องขึ้นดอย",
-        desc: "ภายในมหาวิทยาลัยเชียงใหม่, ดอยสุเทพ",
-        color: "#FFD166",
-        highlight: true,
-        badge: "กิจกรรมประเพณีประจำปี",
-      },
-    ],
-  },
-  {
-    month: "ธันวาคม 2569",
-    color: "#5BC8FF",
-    events: [
-      {
-        time: "12",
-        phase: "12 ธ.ค.",
-        icon: ComputerDesktopIcon,
-        title: "Workshop ดิจิทัลและปัญญาประดิษฐ์",
-        desc: "ห้องปฏิบัติการ CSB301 คณะวิทยาศาสตร์",
-        color: "#A259FF",
-        highlight: true,
-      },
-      {
-        time: "13",
-        phase: "24-25 ธ.ค.",
-        icon: ShoppingBagIcon,
-        title: "CMU Festival (Food Fest)",
-        desc: "ลานสังคีต",
-        color: "#FF6EC7",
-        highlight: true,
-      },
-    ],
-  },
-  {
-    month: "กุมภาพันธ์ (อ้างอิงตามไฟล์ต้นฉบับ)",
-    color: "#FF6EC7",
-    events: [
-      {
-        time: "14",
-        phase: "8-10 ก.พ.",
-        icon: PaintBrushIcon,
-        title: "สานศิลป์ กินแอ่วอู้",
-        desc: "ลานสังคีต, ลานสัก",
-        color: "#06D6A0",
-        highlight: true,
-      },
-      {
-        time: "15",
-        phase: "13 ก.พ.",
-        icon: ShieldCheckIcon,
-        title: "Love at first safe",
-        desc: "ภายในมหาวิทยาลัยเชียงใหม่",
-        color: "#5BC8FF",
-        highlight: false,
-      },
-    ],
-  },
-  {
-    month: "กิจกรรมต่อเนื่อง (ตลอดปีการศึกษา)",
-    color: "#A259FF",
-    events: [
-      {
-        time: "16",
-        phase: "ทุกวันที่ 29 ของเดือน",
-        icon: GiftIcon,
-        title: "สวัสดิการ นศ.",
-        desc: "ภายในมหาวิทยาลัยเชียงใหม่",
-        color: "#A259FF",
-        highlight: false,
-      },
-      {
-        time: "17",
-        phase: "ทุกวันที่ 30 ของเดือน",
-        icon: GlobeAltIcon,
-        title: "CMU Green Shift",
-        desc: "ภายในมหาวิทยาลัยเชียงใหม่",
-        color: "#06D6A0",
-        highlight: false,
-      },
-      {
-        time: "18",
-        phase: "ทุกๆช่วงสัปดาห์อ่านหนังสือ",
-        icon: ChatBubbleLeftRightIcon,
-        title: "ภาษาพาซ่า",
-        desc: "ภายในมหาวิทยาลัยเชียงใหม่, หอประชุม 50 ปีคณะรัฐศาสตร์และ รัฐประศาสนศาสตร์",
-        color: "#5BC8FF",
-        highlight: false,
-      },
-    ],
-  },
-];
+// ตัวแปร State
+const scheduleGroups = ref([]);
+const isLoading = ref(true);
+const errorMessage = ref("");
+
+// ดึงข้อมูลจาก Backend เมื่อโหลดหน้าเว็บเสร็จ
+onMounted(async () => {
+  try {
+    isLoading.value = true;
+    errorMessage.value = "";
+
+    const response = await fetch("/api/activity");
+
+    if (!response.ok) {
+      throw new Error(`เกิดข้อผิดพลาดในการโหลดข้อมูล: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (result.status === "success") {
+      scheduleGroups.value = result.data;
+    } else {
+      throw new Error(result.message || "โหลดข้อมูลไม่สำเร็จ");
+    }
+  } catch (error) {
+    console.error("Fetch Activity Error:", error);
+    errorMessage.value =
+      "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์เพื่อโหลดตารางกิจกรรมได้";
+  } finally {
+    isLoading.value = false;
+  }
+});
 </script>

@@ -91,89 +91,91 @@
             </h3>
           </div>
         </div>
-
         <div
           v-for="(item, i) in group.events"
           :key="item.id"
           class="flex gap-6 mb-5 relative z-10"
           :style="{ animationDelay: groupIdx * 0.1 + i * 0.05 + 's' }"
         >
-          <div class="relative shrink-0 w-[88px] text-right pr-5 pt-4">
-            <span
-              class="font-black text-2xl"
-              :style="{ color: item.color || '#8B7BAE' }"
-              >{{ item.day }}</span
-            >
+          <a :href="item.href" target="_blank" class="flex flex-1 gap-6">
+            <div class="relative shrink-0 w-[88px] text-right pr-5 pt-4">
+              <span
+                class="font-black text-2xl"
+                :style="{ color: item.color || '#8B7BAE' }"
+                >{{ item.day }}</span
+              >
+              <div
+                class="absolute right-[-7px] top-[18px] w-3.5 h-3.5 rounded-full border-[2.5px] border-white"
+                :style="{
+                  background: item.color || '#A259FF',
+                  boxShadow: `0 0 10px ${item.color || '#A259FF'}80`,
+                }"
+              ></div>
+            </div>
+
             <div
-              class="absolute right-[-7px] top-[18px] w-3.5 h-3.5 rounded-full border-[2.5px] border-white"
-              :style="{
-                background: item.color || '#A259FF',
-                boxShadow: `0 0 10px ${item.color || '#A259FF'}80`,
-              }"
-            ></div>
-          </div>
+              class="flex-1 quest-card group cursor-pointer hover:-translate-y-1 transition-transform duration-300"
+              :class="item.highlight ? 'ring-2 ring-offset-1' : ''"
+              :style="item.highlight ? { ringColor: item.color } : {}"
+            >
+              <div class="flex items-start justify-between gap-3 mb-2">
+                <div class="flex items-center gap-3">
+                  <component
+                    :is="iconMap[item.icon]"
+                    class="w-7 h-7 select-none shrink-0"
+                    :style="{ color: item.color }"
+                    style="filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))"
+                  />
 
-          <div
-            class="flex-1 quest-card group cursor-pointer hover:-translate-y-1 transition-transform duration-300"
-            :class="item.highlight ? 'ring-2 ring-offset-1' : ''"
-            :style="item.highlight ? { ringColor: item.color } : {}"
-          >
-            <div class="flex items-start justify-between gap-3 mb-2">
-              <div class="flex items-center gap-3">
-                <component
-                  :is="item.icon"
-                  class="w-7 h-7 select-none shrink-0"
-                  :style="{ color: item.color }"
-                  style="filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))"
-                />
-
-                <div>
-                  <span
-                    class="tag-pill text-xs flex items-center gap-1 font-semibold"
-                    :style="{
-                      color: item.color || '#A259FF',
-                      borderColor: (item.color || '#A259FF') + '50',
-                      background: (item.color || '#A259FF') + '14',
-                    }"
-                  >
-                    {{ item.category }}
-                  </span>
+                  <div>
+                    <span
+                      class="tag-pill text-xs flex items-center gap-1 font-semibold"
+                      :style="{
+                        color: item.color || '#A259FF',
+                        borderColor: (item.color || '#A259FF') + '50',
+                        background: (item.color || '#A259FF') + '14',
+                      }"
+                    >
+                      {{ item.category }}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <h3
-              class="font-black text-dark text-lg leading-tight mb-2 mt-3 group-hover:text-opacity-80 transition-colors"
-            >
-              {{ item.title }}
-            </h3>
-            <p
-              class="text-sm font-light leading-relaxed mb-4 line-clamp-2"
-              style="color: #8b7bae"
-            >
-              {{ item.desc }}
-            </p>
-
-            <div class="flex items-center justify-between mt-2">
-              <div
-                v-if="item.badge"
-                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold"
-                :style="{
-                  background: '#ef444415',
-                  color: '#ef4444',
-                }"
+              <h3
+                class="font-black text-dark text-lg leading-tight mb-2 mt-3 group-hover:text-opacity-80 transition-colors"
               >
-                <FireIcon class="w-3.5 h-3.5" /> {{ item.badge }}
+                {{ item.title }}
+              </h3>
+              <p
+                class="text-sm font-light leading-relaxed mb-4 line-clamp-2"
+                style="color: #8b7bae"
+              >
+                {{ item.desc }}
+              </p>
+
+              <div class="flex items-center justify-between mt-2">
+                <div
+                  v-if="item.badge"
+                  class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold"
+                  :style="{
+                    background: '#ef444415',
+                    color: '#ef4444',
+                  }"
+                >
+                  <FireIcon class="w-3.5 h-3.5" /> {{ item.badge }}
+                </div>
+                <div v-else></div>
+
+                <span
+                  class="text-xs font-bold flex items-center gap-1"
+                  :style="{ color: item.color }"
+                >
+                  อ่านเพิ่มเติม <ArrowRightIcon class="w-3 h-3" />
+                </span>
               </div>
-              <div v-else></div>
-              <span
-                class="text-xs font-bold flex items-center gap-1"
-                :style="{ color: item.color }"
-              >
-                อ่านเพิ่มเติม <ArrowRightIcon class="w-3 h-3" />
-              </span>
             </div>
-          </div>
+          </a>
         </div>
       </template>
     </div>
@@ -181,75 +183,57 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from "vue";
 import Navbar from "../components/Navbar.vue";
 import {
   NewspaperIcon,
   BellAlertIcon,
-  SparklesIcon,
   FireIcon,
   CalendarDaysIcon,
   ArrowRightIcon,
+  SparklesIcon, // 👈 อย่าลืม Import ไอคอนตัวนี้มาด้วย
 } from "@heroicons/vue/24/solid";
+
+const iconMap = {
+  SparklesIcon: SparklesIcon,
+  NewspaperIcon: NewspaperIcon,
+};
 
 const meta = [
   { icon: NewspaperIcon, text: "ข่าวสารทั้งหมด", color: "#FF6EC7" },
   { icon: BellAlertIcon, text: "อัปเดตล่าสุด", color: "#5BC8FF" },
 ];
 
-const newsGroups = [
-  // {
-  //   month: "กรกฎาคม 2569",
-  //   color: "#FF6EC7",
-  //   events: [
-  //     {
-  //       id: "0",
-  //       day: "01",
-  //       category: "✨ กิจกรรม",
-  //       icon: SparklesIcon,
-  //       title: "สรุปยอดเงินบริจาคจากโครงการ CMU Run for Charity",
-  //       desc: "ขอขอบคุณนักวิ่งทุกคนที่ร่วมเป็นส่วนหนึ่ง ในปีนี้เราสามารถระดมทุนเพื่อจัดซื้ออุปกรณ์การแพทย์ได้กว่า 1.5 ล้านบาท",
-  //       color: "#A259FF",
-  //       highlight: true,
-  //     },
-  //     {
-  //       id: "1",
-  //       day: "29",
-  //       category: "✨ กิจกรรม",
-  //       icon: SparklesIcon,
-  //       title: "สรุปยอดเงินบริจาคจากโครงการ CMU Run for Charity",
-  //       desc: "ขอขอบคุณนักวิ่งทุกคนที่ร่วมเป็นส่วนหนึ่ง ในปีนี้เราสามารถระดมทุนเพื่อจัดซื้ออุปกรณ์การแพทย์ได้กว่า 1.5 ล้านบาท",
-  //       color: "#A259FF",
-  //       highlight: false,
-  //     },
-  //   ],
-  // },
-  // {
-  //   month: "มิถุนายน 2569",
-  //   color: "#06D6A0",
-  //   events: [
-  //     {
-  //       id: "0",
-  //       day: "01",
-  //       category: "✨ กิจกรรม",
-  //       icon: SparklesIcon,
-  //       title: "สรุปยอดเงินบริจาคจากโครงการ CMU Run for Charity",
-  //       desc: "ขอขอบคุณนักวิ่งทุกคนที่ร่วมเป็นส่วนหนึ่ง ในปีนี้เราสามารถระดมทุนเพื่อจัดซื้ออุปกรณ์การแพทย์ได้กว่า 1.5 ล้านบาท",
-  //       color: "#A259FF",
-  //       highlight: true,
-  //     },
-  //     {
-  //       id: "1",
-  //       day: "29",
-  //       category: "✨ กิจกรรม",
-  //       icon: SparklesIcon,
-  //       title: "สรุปยอดเงินบริจาคจากโครงการ CMU Run for Charity",
-  //       desc: "ขอขอบคุณนักวิ่งทุกคนที่ร่วมเป็นส่วนหนึ่ง ในปีนี้เราสามารถระดมทุนเพื่อจัดซื้ออุปกรณ์การแพทย์ได้กว่า 1.5 ล้านบาท",
-  //       color: "#A259FF",
-  //       highlight: false,
-  //     },
-  //   ],
-  // },
-];
+const newsGroups = ref([]);
+const isLoading = ref(true);
+const errorMessage = ref("");
+
+onMounted(async () => {
+  try {
+    isLoading.value = true;
+
+    const response = await fetch("/api/news", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`เกิดข้อผิดพลาด: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    // 4. นำข้อมูลที่ได้ไปใส่ในตัวแปร newsGroups
+    newsGroups.value = result.data;
+  } catch (error) {
+    console.error("Error loading news:", error);
+    errorMessage.value = "ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง";
+  } finally {
+    isLoading.value = false;
+  }
+});
 </script>
 
 <style scoped>
