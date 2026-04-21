@@ -5,12 +5,12 @@ from supabase import create_client, Client
 load_dotenv()
 
 url: str = os.environ.get("SUPABASE_URL")
-key: str = os.environ.get("SUPABASE_KEY")
+key: str = os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or os.environ.get("SUPABASE_KEY")
 
 supabase: Client | None = None
 
 if not url or not key:
-    print("⚠️  Warning: SUPABASE_URL or SUPABASE_KEY is missing in .env file!")
+    print("⚠️  Warning: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is missing in .env file!")
 else:
     supabase = create_client(url, key)
     print("✅ Successfully connected to Supabase!")

@@ -60,6 +60,23 @@ async def get_current_user(request: Request):
         return {"user": user_res.user}
     except Exception:
         return {"user": None}
+    
+@router.get("/auth/me")
+async def get_me(request: Request):
+    token = request.cookies.get("sb-access-token")
+    if not token:
+        return {"user": None}
+    
+    user_res = supabase.auth.get_user(token)
+    if not user_res.user:
+        return {"user": None}
+
+    return {
+        "user": {
+            "email": user_res.user.email,
+            "role": user_res.user.app_metadata.get("role", "user")
+        }
+    }
 
 @router.post("/auth/logout")
 async def logout(response: Response):

@@ -111,131 +111,134 @@
       </div>
     </div>
   </section>
-
-  <transition name="fade">
-    <div
-      v-if="isFormOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto"
-      @click.self="isFormOpen = false"
-    >
+  <Teleport to="body">
+    <transition name="fade">
       <div
-        class="glass w-full max-w-2xl rounded-2xl p-6 md:p-8 shadow-2xl relative my-auto animate-scale-up"
+        v-if="isFormOpen"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm overflow-y-auto"
+        @click.self="isFormOpen = false"
       >
-        <div class="flex justify-between items-center mb-6">
-          <h2 class="text-2xl font-black text-dark flex items-center gap-2">
-            <PencilSquareIcon class="w-6 h-6 text-[#a259ff]" />
-            แบบฟอร์มส่งข้อเสนอแนะ / ร้องเรียน
-          </h2>
-          <button
-            @click="isFormOpen = false"
-            class="p-2 rounded-full bg-white/50 hover:bg-red-100 hover:text-red-500 transition-colors text-gray-500"
-          >
-            <XMarkIcon class="w-5 h-5" />
-          </button>
-        </div>
-
-        <form @submit.prevent="submitForm" class="space-y-5">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label class="block text-sm font-bold text-dark mb-1"
-                >ประเภทผู้ให้ข้อมูล <span class="text-red-500">*</span></label
-              >
-              <select
-                v-model="formData.userType"
-                required
-                class="w-full px-4 py-3 rounded-xl bg-white/60 border border-white/50 focus:outline-none focus:ring-2 focus:ring-[#a259ff] text-dark"
-              >
-                <option value="" disabled>เลือกประเภท...</option>
-                <option value="student">นักศึกษา</option>
-                <option value="staff">บุคลากร</option>
-                <option value="alumni">นักศึกษาเก่า</option>
-                <option value="general">บุคคลทั่วไป</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-bold text-dark mb-1"
-                >ประเภทเรื่อง <span class="text-red-500">*</span></label
-              >
-              <select
-                v-model="formData.topicType"
-                required
-                class="w-full px-4 py-3 rounded-xl bg-white/60 border border-white/50 focus:outline-none focus:ring-2 focus:ring-[#5bc8ff] text-dark"
-              >
-                <option value="" disabled>เลือกประเภทเรื่อง...</option>
-                <option value="feedback">ข้อเสนอแนะเพื่อการพัฒนา</option>
-                <option value="complaint">ร้องเรียนปัญหา</option>
-                <option value="inquiry">สอบถามข้อมูล</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-bold text-dark mb-1"
-              >หัวข้อเรื่อง <span class="text-red-500">*</span></label
-            >
-            <input
-              v-model="formData.title"
-              type="text"
-              required
-              placeholder="ระบุหัวข้อที่ต้องการแจ้ง..."
-              class="w-full px-4 py-3 rounded-xl bg-white/60 border border-white/50 focus:outline-none focus:ring-2 focus:ring-[#a259ff] text-dark placeholder-gray-400"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-bold text-dark mb-1"
-              >รายละเอียด <span class="text-red-500">*</span></label
-            >
-            <textarea
-              v-model="formData.description"
-              required
-              rows="4"
-              placeholder="อธิบายรายละเอียดปัญหาหรือข้อเสนอแนะของคุณ..."
-              class="w-full px-4 py-3 rounded-xl bg-white/60 border border-white/50 focus:outline-none focus:ring-2 focus:ring-[#a259ff] text-dark placeholder-gray-400 resize-none"
-            ></textarea>
-          </div>
-
-          <div>
-            <label class="block text-sm font-bold text-dark mb-1"
-              >อีเมลหรือเบอร์โทรศัพท์ (หากต้องการให้ติดต่อกลับ)</label
-            >
-            <input
-              v-model="formData.contactInfo"
-              type="text"
-              placeholder="example@cmu.ac.th หรือ 08X-XXX-XXXX"
-              class="w-full px-4 py-3 rounded-xl bg-white/60 border border-white/50 focus:outline-none focus:ring-2 focus:ring-[#5bc8ff] text-dark placeholder-gray-400"
-            />
-          </div>
-
-          <div
-            v-if="errorMessage"
-            class="text-red-500 text-sm font-bold text-center"
-          >
-            {{ errorMessage }}
-          </div>
-
-          <div class="pt-4 border-t border-gray-200/50 flex justify-end gap-3">
+        <div
+          class="glass w-full max-w-2xl rounded-2xl p-6 md:p-8 shadow-2xl relative my-auto animate-scale-up"
+        >
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-black text-dark flex items-center gap-2">
+              <PencilSquareIcon class="w-6 h-6 text-[#a259ff]" />
+              แบบฟอร์มส่งข้อเสนอแนะ / ร้องเรียน
+            </h2>
             <button
-              type="button"
               @click="isFormOpen = false"
-              class="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-white/50 transition-colors"
-              :disabled="isLoading"
+              class="p-2 rounded-full bg-white/50 hover:bg-red-100 hover:text-red-500 transition-colors text-gray-500"
             >
-              ยกเลิก
-            </button>
-            <button
-              type="submit"
-              class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#a259ff] to-[#5bc8ff] text-white font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              :disabled="isLoading"
-            >
-              <span v-if="isLoading">กำลังส่ง...</span>
-              <span v-else>ส่งข้อมูล</span>
+              <XMarkIcon class="w-5 h-5" />
             </button>
           </div>
-        </form>
+
+          <form @submit.prevent="submitForm" class="space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label class="block text-sm font-bold text-dark mb-1"
+                  >ประเภทผู้ให้ข้อมูล <span class="text-red-500">*</span></label
+                >
+                <select
+                  v-model="formData.userType"
+                  required
+                  class="w-full px-4 py-3 rounded-xl bg-white/60 border border-white/50 focus:outline-none focus:ring-2 focus:ring-[#a259ff] text-dark"
+                >
+                  <option value="" disabled>เลือกประเภท...</option>
+                  <option value="student">นักศึกษา</option>
+                  <option value="staff">บุคลากร</option>
+                  <option value="alumni">นักศึกษาเก่า</option>
+                  <option value="general">บุคคลทั่วไป</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-bold text-dark mb-1"
+                  >ประเภทเรื่อง <span class="text-red-500">*</span></label
+                >
+                <select
+                  v-model="formData.topicType"
+                  required
+                  class="w-full px-4 py-3 rounded-xl bg-white/60 border border-white/50 focus:outline-none focus:ring-2 focus:ring-[#5bc8ff] text-dark"
+                >
+                  <option value="" disabled>เลือกประเภทเรื่อง...</option>
+                  <option value="feedback">ข้อเสนอแนะเพื่อการพัฒนา</option>
+                  <option value="complaint">ร้องเรียนปัญหา</option>
+                  <option value="inquiry">สอบถามข้อมูล</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-dark mb-1"
+                >หัวข้อเรื่อง <span class="text-red-500">*</span></label
+              >
+              <input
+                v-model="formData.title"
+                type="text"
+                required
+                placeholder="ระบุหัวข้อที่ต้องการแจ้ง..."
+                class="w-full px-4 py-3 rounded-xl bg-white/60 border border-white/50 focus:outline-none focus:ring-2 focus:ring-[#a259ff] text-dark placeholder-gray-400"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-dark mb-1"
+                >รายละเอียด <span class="text-red-500">*</span></label
+              >
+              <textarea
+                v-model="formData.description"
+                required
+                rows="4"
+                placeholder="อธิบายรายละเอียดปัญหาหรือข้อเสนอแนะของคุณ..."
+                class="w-full px-4 py-3 rounded-xl bg-white/60 border border-white/50 focus:outline-none focus:ring-2 focus:ring-[#a259ff] text-dark placeholder-gray-400 resize-none"
+              ></textarea>
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold text-dark mb-1"
+                >อีเมลหรือเบอร์โทรศัพท์ (หากต้องการให้ติดต่อกลับ)</label
+              >
+              <input
+                v-model="formData.contactInfo"
+                type="text"
+                placeholder="example@cmu.ac.th หรือ 08X-XXX-XXXX"
+                class="w-full px-4 py-3 rounded-xl bg-white/60 border border-white/50 focus:outline-none focus:ring-2 focus:ring-[#5bc8ff] text-dark placeholder-gray-400"
+              />
+            </div>
+
+            <div
+              v-if="errorMessage"
+              class="text-red-500 text-sm font-bold text-center"
+            >
+              {{ errorMessage }}
+            </div>
+
+            <div
+              class="pt-4 border-t border-gray-200/50 flex justify-end gap-3"
+            >
+              <button
+                type="button"
+                @click="isFormOpen = false"
+                class="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-white/50 transition-colors"
+                :disabled="isLoading"
+              >
+                ยกเลิก
+              </button>
+              <button
+                type="submit"
+                class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#a259ff] to-[#5bc8ff] text-white font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                :disabled="isLoading"
+              >
+                <span v-if="isLoading">กำลังส่ง...</span>
+                <span v-else>ส่งข้อมูล</span>
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
-  </transition>
+    </transition>
+  </Teleport>
 </template>
 <script setup>
 import { ref, reactive } from "vue";

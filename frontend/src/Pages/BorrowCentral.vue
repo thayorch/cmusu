@@ -1,6 +1,8 @@
 <template>
   <Navbar />
-  <section class="relative z-10 max-w-6xl mx-auto px-6 py-10 animate-fade-in">
+  <section
+    class="relative z-10 max-w-6xl mx-auto px-6 pt-10 pb-32 animate-fade-in"
+  >
     <div class="text-center mb-12">
       <div
         class="glass inline-flex items-center gap-2 px-5 py-2 rounded-full mb-5"
@@ -45,7 +47,7 @@
           alt="Microsoft Logo"
           class="w-5 h-5"
         />
-        เข้าสู่ระบบด้วย Microsoft
+        เข้าสู่ระบบด้วย
       </a>
     </div>
 
@@ -134,164 +136,170 @@
           >{{ cart.length }}</span
         >
       </div>
+
       <span class="font-bold pr-2 hidden md:block">ดูตะกร้ายืม</span>
     </button>
 
-    <div
-      v-if="isCartOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
-    >
+    <Teleport to="body">
       <div
-        class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl p-8 relative shadow-2xl"
+        v-if="isCartOpen"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
       >
-        <button
-          @click="isCartOpen = false"
-          class="absolute top-6 right-6 text-gray-400 hover:text-gray-600"
+        <div
+          class="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl p-8 relative shadow-2xl"
         >
-          <XMarkIcon class="w-6 h-6" />
-        </button>
-
-        <h3 class="text-2xl font-bold mb-6 flex items-center gap-2">
-          <ShoppingCartIcon class="w-6 h-6 text-[#a259ff]" /> ตะกร้ายืมครุภัณฑ์
-        </h3>
-
-        <div class="space-y-4 mb-8">
-          <div
-            v-for="(cartItem, index) in cart"
-            :key="cartItem.equipment.id"
-            class="flex items-center gap-4 bg-gray-50 p-3 rounded-2xl border"
+          <button
+            @click="isCartOpen = false"
+            class="absolute top-6 right-6 text-gray-400 hover:text-gray-600"
           >
-            <img
-              :src="cartItem.equipment.image_url"
-              class="w-16 h-16 object-cover rounded-xl"
-            />
-            <div class="flex-1">
-              <h4 class="font-bold text-sm">{{ cartItem.equipment.name }}</h4>
-              <p class="text-xs text-gray-500">
-                เหลือ {{ cartItem.equipment.available_quantity }} ชิ้น
-              </p>
+            <XMarkIcon class="w-6 h-6" />
+          </button>
+
+          <h3 class="text-2xl font-bold mb-6 flex items-center gap-2">
+            <ShoppingCartIcon class="w-6 h-6 text-[#a259ff]" />
+            ตะกร้ายืมครุภัณฑ์
+          </h3>
+
+          <div class="space-y-4 mb-8">
+            <div
+              v-for="(cartItem, index) in cart"
+              :key="cartItem.equipment.id"
+              class="flex items-center gap-4 bg-gray-50 p-3 rounded-2xl border"
+            >
+              <img
+                :src="cartItem.equipment.image_url"
+                class="w-16 h-16 object-cover rounded-xl"
+              />
+              <div class="flex-1">
+                <h4 class="font-bold text-sm">{{ cartItem.equipment.name }}</h4>
+                <p class="text-xs text-gray-500">
+                  เหลือ {{ cartItem.equipment.available_quantity }} ชิ้น
+                </p>
+              </div>
+
+              <div
+                class="flex items-center gap-2 bg-white border rounded-lg px-2 py-1"
+              >
+                <button
+                  @click="updateCartQty(index, -1)"
+                  class="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded text-gray-700 font-bold"
+                >
+                  -
+                </button>
+                <input
+                  v-model.number="cartItem.quantity"
+                  @change="validateCartQty(index)"
+                  type="number"
+                  class="w-10 text-center text-sm font-bold outline-none"
+                />
+                <button
+                  @click="updateCartQty(index, 1)"
+                  class="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded text-gray-700 font-bold"
+                >
+                  +
+                </button>
+              </div>
+
+              <button
+                @click="removeFromCart(index)"
+                class="p-2 text-red-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+              >
+                <TrashIcon class="w-5 h-5" />
+              </button>
             </div>
 
             <div
-              class="flex items-center gap-2 bg-white border rounded-lg px-2 py-1"
+              v-if="cart.length === 0"
+              class="text-center py-6 text-gray-400 bg-gray-50 rounded-2xl border border-dashed"
             >
-              <button
-                @click="updateCartQty(index, -1)"
-                class="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded text-gray-700 font-bold"
+              ตะกร้าว่างเปล่า
+            </div>
+          </div>
+
+          <hr class="mb-6" />
+
+          <form
+            v-if="cart.length > 0"
+            @submit.prevent="submitBorrowCheckout"
+            class="space-y-4"
+          >
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-bold mb-1 text-gray-700"
+                  >ชื่อ-นามสกุล <span class="text-red-500">*</span></label
+                >
+                <input
+                  v-model="formData.full_name"
+                  type="text"
+                  required
+                  class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-[#a259ff] outline-none"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-bold mb-1 text-gray-700"
+                  >รหัสนักศึกษา <span class="text-red-500">*</span></label
+                >
+                <input
+                  v-model="formData.student_id"
+                  type="text"
+                  required
+                  class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-[#a259ff] outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-bold mb-1 text-gray-700"
+                >ช่องทางติดต่อ <span class="text-red-500">*</span></label
               >
-                -
-              </button>
               <input
-                v-model.number="cartItem.quantity"
-                @change="validateCartQty(index)"
-                type="number"
-                class="w-10 text-center text-sm font-bold outline-none"
+                v-model="formData.contact_info"
+                type="text"
+                required
+                class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-[#a259ff] outline-none"
               />
-              <button
-                @click="updateCartQty(index, 1)"
-                class="w-6 h-6 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded text-gray-700 font-bold"
-              >
-                +
-              </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-bold mb-1 text-gray-700"
+                  >วันที่ยืม <span class="text-red-500">*</span></label
+                >
+                <input
+                  v-model="formData.borrow_date"
+                  type="date"
+                  required
+                  class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-[#a259ff] outline-none"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-bold mb-1 text-gray-700"
+                  >วันที่คืน <span class="text-red-500">*</span></label
+                >
+                <input
+                  v-model="formData.return_date"
+                  type="date"
+                  required
+                  class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-[#a259ff] outline-none"
+                />
+              </div>
             </div>
 
             <button
-              @click="removeFromCart(index)"
-              class="p-2 text-red-400 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+              type="submit"
+              :disabled="isSubmitting"
+              class="w-full mt-6 py-4 bg-gray-900 hover:bg-black text-white font-bold rounded-xl transition-all shadow-md disabled:opacity-50 text-lg"
             >
-              <TrashIcon class="w-5 h-5" />
+              {{
+                isSubmitting
+                  ? "กำลังดำเนินการ..."
+                  : "ยืนยันการยืมครุภัณฑ์ทั้งหมด"
+              }}
             </button>
-          </div>
-
-          <div
-            v-if="cart.length === 0"
-            class="text-center py-6 text-gray-400 bg-gray-50 rounded-2xl border border-dashed"
-          >
-            ตะกร้าว่างเปล่า
-          </div>
+          </form>
         </div>
-
-        <hr class="mb-6" />
-
-        <form
-          v-if="cart.length > 0"
-          @submit.prevent="submitBorrowCheckout"
-          class="space-y-4"
-        >
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-bold mb-1 text-gray-700"
-                >ชื่อ-นามสกุล <span class="text-red-500">*</span></label
-              >
-              <input
-                v-model="formData.full_name"
-                type="text"
-                required
-                class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-[#a259ff] outline-none"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-bold mb-1 text-gray-700"
-                >รหัสนักศึกษา <span class="text-red-500">*</span></label
-              >
-              <input
-                v-model="formData.student_id"
-                type="text"
-                required
-                class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-[#a259ff] outline-none"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-bold mb-1 text-gray-700"
-              >ช่องทางติดต่อ <span class="text-red-500">*</span></label
-            >
-            <input
-              v-model="formData.contact_info"
-              type="text"
-              required
-              class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-[#a259ff] outline-none"
-            />
-          </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-bold mb-1 text-gray-700"
-                >วันที่ยืม <span class="text-red-500">*</span></label
-              >
-              <input
-                v-model="formData.borrow_date"
-                type="date"
-                required
-                class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-[#a259ff] outline-none"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-bold mb-1 text-gray-700"
-                >วันที่คืน <span class="text-red-500">*</span></label
-              >
-              <input
-                v-model="formData.return_date"
-                type="date"
-                required
-                class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border focus:bg-white focus:ring-2 focus:ring-[#a259ff] outline-none"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            :disabled="isSubmitting"
-            class="w-full mt-6 py-4 bg-gray-900 hover:bg-black text-white font-bold rounded-xl transition-all shadow-md disabled:opacity-50 text-lg"
-          >
-            {{
-              isSubmitting ? "กำลังดำเนินการ..." : "ยืนยันการยืมครุภัณฑ์ทั้งหมด"
-            }}
-          </button>
-        </form>
       </div>
-    </div>
+    </Teleport>
   </section>
 </template>
 

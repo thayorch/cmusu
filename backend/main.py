@@ -9,7 +9,7 @@ import os
 from dotenv import load_dotenv
 
 from core.config import CsrfSettings
-from routers import reports, news, csrf, activity, borrow, auth
+from routers import reports, news, csrf, activity, borrow, auth, admin
 
 load_dotenv()
 
@@ -52,6 +52,7 @@ app.include_router(csrf.router, prefix="/api", tags=["Csrf"])
 app.include_router(reports.router, prefix="/api", tags=["Reports"])
 app.include_router(news.router, prefix="/api", tags=["News"])
 app.include_router(activity.router, prefix="/api", tags=["Activity"])
+app.include_router(admin.router, prefix="/api", tags=["Admin"])
 
 
 @app.get("/api/health")
