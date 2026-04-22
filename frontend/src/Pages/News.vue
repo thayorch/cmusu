@@ -60,7 +60,7 @@
 
     <div v-else class="relative">
       <div
-        class="absolute top-0 bottom-0 w-0.5 rounded-full pointer-events-none"
+        class="absolute top-0 bottom-0 w-0.5 rounded-full pointer-events-none hidden sm:block"
         style="
           left: 88px;
           background: linear-gradient(
@@ -76,7 +76,7 @@
 
       <template v-for="(group, groupIdx) in newsGroups" :key="group.month">
         <div class="flex gap-6 mb-8 mt-12 first:mt-0 relative z-10">
-          <div class="shrink-0 w-[88px]"></div>
+          <div class="hidden sm:block shrink-0 w-[88px]"></div>
           <div class="flex-1">
             <h3
               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-base font-bold backdrop-blur-md"
@@ -98,7 +98,7 @@
           :style="{ animationDelay: groupIdx * 0.1 + i * 0.05 + 's' }"
         >
           <a :href="item.href" target="_blank" class="flex flex-1 gap-6">
-            <div class="relative shrink-0 w-[88px] text-right pr-5 pt-4">
+            <div class="hidden sm:block relative shrink-0 w-[88px] text-right pr-5 pt-4">
               <span
                 class="font-black text-2xl"
                 :style="{ color: item.color || '#8B7BAE' }"
@@ -120,6 +120,11 @@
             >
               <div class="flex items-start justify-between gap-3 mb-2">
                 <div class="flex items-center gap-3">
+                  <span
+                    class="sm:hidden font-black text-xl mr-1"
+                    :style="{ color: item.color || '#8B7BAE' }"
+                    >{{ item.day }}</span
+                  >
                   <component
                     :is="iconMap[item.icon]"
                     class="w-7 h-7 select-none shrink-0"

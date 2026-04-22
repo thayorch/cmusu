@@ -15,7 +15,7 @@
 
         <button
           @click="isMenuOpen = true"
-          class="p-2 rounded-xl text-[#8b7bae] hover:text-[#a259ff] hover:bg-[#a259ff]/10 focus:outline-none transition-colors"
+          class="p-2 bg-[#a259ff]/10 rounded-xl text-[#8b7bae] hover:text-[#a259ff] hover:bg-[#a259ff]/20 focus:outline-none transition-colors"
         >
           <Bars3Icon class="w-7 h-7" />
         </button>

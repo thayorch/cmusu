@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, HTTPException, UploadFile, File
+from fastapi import APIRouter, BackgroundTasks, Depends, Request, HTTPException, UploadFile, File
 from fastapi_csrf_protect import CsrfProtect
 from pydantic import BaseModel
 import uuid
@@ -7,6 +7,7 @@ from db.database import supabase
 from dependencies import admin_required
 
 from models.schemas import EquipmentCreate, NewsCreate, UpdateStatus
+from utils.email import send_status_email
 
 
 # 💡 ทริค: ใส่ด่านตรวจ admin_required ไว้ที่ Router หลักเลย 
@@ -91,22 +92,75 @@ async def get_all_requests():
         raise HTTPException(status_code=500, detail=str(e))
         
 @router.put('/admin/requests/status')
-async def update_request_status(request: Request, payload: UpdateStatus, csrf_protect: CsrfProtect = Depends()):
-    """ อัปเดตสถานะคำร้อง """
+async def update_request_status(
+    request: Request,
+    payload: UpdateStatus,
+    background_tasks: BackgroundTasks,
+    csrf_protect: CsrfProtect = Depends(),
+):
+    """ อัปเดตสถานะคำร้อง และส่งอีเมลแจ้งผู้ยืม """
     await csrf_protect.validate_csrf(request)
     try:
+        req_data = supabase.table("borrow_requests") \
+            .select("user_id, full_name, borrow_date, return_date") \
+            .eq("id", payload.id).single().execute()
+
         supabase.table("borrow_requests").update({"status": payload.status}).eq("id", payload.id).execute()
 
+        # ดึงรายการอุปกรณ์พร้อมชื่อและรูปสำหรับอีเมล
+        items_with_names = supabase.table("borrow_request_items") \
+            .select("quantity, equipments(name, image_url)") \
+            .eq("request_id", payload.id).execute()
+        email_items = [
+            {
+                "name": item["equipments"]["name"],
+                "image_url": item["equipments"].get("image_url", ""),
+                "quantity": item["quantity"],
+            }
+            for item in items_with_names.data
+            if item.get("equipments")
+        ]
+
         if payload.status == "returned":
-            items_res = supabase.table("borrow_request_items").select("equipment_id, quantity").eq("request_id", payload.id).execute()
-            for item in items_res.data:
+            stock_items = supabase.table("borrow_request_items") \
+                .select("equipment_id, quantity").eq("request_id", payload.id).execute()
+            for item in stock_items.data:
                 eq_id = item["equipment_id"]
                 qty = item["quantity"]
                 current_eq = supabase.table("equipments").select("available_quantity").eq("id", eq_id).single().execute()
                 new_qty = current_eq.data["available_quantity"] + qty
                 supabase.table("equipments").update({"available_quantity": new_qty}).eq("id", eq_id).execute()
 
+        # ส่งอีเมลแจ้งผู้ยืมใน Background (ไม่ block response)
+        try:
+            user_id = req_data.data["user_id"]
+            user_res = supabase.auth.admin.get_user_by_id(user_id)
+            to_email = user_res.user.email
+            if to_email:
+                background_tasks.add_task(
+                    send_status_email,
+                    to_email=to_email,
+                    full_name=req_data.data["full_name"],
+                    status=payload.status,
+                    borrow_date=str(req_data.data["borrow_date"]),
+                    return_date=str(req_data.data["return_date"]),
+                    items=email_items,
+                )
+        except Exception as email_err:
+            print(f"⚠️ Could not resolve email for notification: {email_err}")
+
         return {"status": "success", "message": f"เปลี่ยนสถานะเป็น {payload.status} เรียบร้อย"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete('/admin/requests/{request_id}')
+async def delete_request(request: Request, request_id: str, csrf_protect: CsrfProtect = Depends()):
+    """ ลบคำร้องขอยืม """
+    await csrf_protect.validate_csrf(request)
+    try:
+        # ลบข้อมูล (ด้วย ON DELETE CASCADE ใน SQL ข้อมูลในตารางไอเทมที่ยืมจะถูกลบไปด้วย)
+        supabase.table("borrow_requests").delete().eq("id", request_id).execute()
+        return {"status": "success", "message": "ลบคำร้องเรียบร้อยแล้ว"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

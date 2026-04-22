@@ -13,6 +13,7 @@ async def get_central_equipments():
         return {"status": "success", "data": res.data}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+        
 @router.post('/borrow/request')
 async def submit_borrow_request(request: Request, req: BorrowSubmit, csrf_protect: CsrfProtect = Depends()):
     await csrf_protect.validate_csrf(request)
@@ -33,6 +34,8 @@ async def submit_borrow_request(request: Request, req: BorrowSubmit, csrf_protec
             "p_full_name": req.full_name,
             "p_student_id": req.student_id,
             "p_contact_info": req.contact_info,
+            "p_faculty": req.faculty,
+            "p_purpose_location": req.purpose_location,
             "p_borrow_date": str(req.borrow_date),
             "p_return_date": str(req.return_date),
             "p_items": [item.dict() for item in req.items]

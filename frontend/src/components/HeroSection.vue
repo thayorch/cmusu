@@ -76,7 +76,7 @@
     >
       <span class="block text-dark">สโมสรนักศึกษา</span>
       <span
-        class="block dung"
+        class="block dung pt-2"
         style="
           background: linear-gradient(
             180deg,

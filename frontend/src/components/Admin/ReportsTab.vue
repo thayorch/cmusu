@@ -1,5 +1,11 @@
 <template>
-  <div class="animate-fade-in">
+  <div class="animate-fade-in relative">
+    <div
+      v-if="openFilterDropdown"
+      @click="openFilterDropdown = null"
+      class="fixed inset-0 z-30"
+    ></div>
+
     <div class="mb-6">
       <h3
         class="text-2xl md:text-3xl font-black text-dark mb-1 flex items-center gap-2"
@@ -10,6 +16,110 @@
       <p class="text-gray-500 text-sm">
         รายการข้อเสนอแนะและข้อร้องเรียนจากผู้ใช้งาน
       </p>
+    </div>
+
+    <div class="flex flex-wrap gap-3 mb-5 relative z-40">
+      <div class="relative">
+        <button
+          @click="openFilterDropdown = openFilterDropdown === 'topic' ? null : 'topic'"
+          class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border shadow-sm transition-all bg-white hover:bg-gray-50"
+          :class="filterTopic ? 'border-[#ff6ec7] text-[#ff6ec7]' : 'border-gray-200 text-gray-600'"
+        >
+          <FunnelIcon class="w-4 h-4" />
+          {{ filterTopic ? getTopicStyle(filterTopic).label : 'ทุกประเภท' }}
+          <ChevronDownIcon
+            class="w-4 h-4 transition-transform duration-200"
+            :class="{ 'rotate-180': openFilterDropdown === 'topic' }"
+          />
+        </button>
+        <transition
+          enter-active-class="transition ease-out duration-150"
+          enter-from-class="transform opacity-0 scale-95 translate-y-[-10px]"
+          enter-to-class="transform opacity-100 scale-100 translate-y-0"
+          leave-active-class="transition ease-in duration-100"
+          leave-from-class="transform opacity-100 scale-100 translate-y-0"
+          leave-to-class="transform opacity-0 scale-95 translate-y-[-10px]"
+        >
+          <div
+            v-if="openFilterDropdown === 'topic'"
+            class="absolute z-50 mt-2 w-44 origin-top bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden"
+          >
+            <div class="p-2 flex flex-col gap-1">
+              <button
+                @click="filterTopic = null; openFilterDropdown = null; currentPage = 1"
+                class="w-full text-left px-4 py-2.5 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                :class="{ 'bg-gray-100': !filterTopic }"
+              >
+                ทุกประเภท
+              </button>
+              <button
+                v-for="(style, key) in topicStyles"
+                :key="key"
+                @click="filterTopic = key; openFilterDropdown = null; currentPage = 1"
+                class="w-full text-left px-4 py-2.5 rounded-xl text-sm font-bold transition-colors"
+                :class="[style.hoverClass, filterTopic === key ? style.activeClass : 'text-gray-700']"
+              >
+                {{ style.label }}
+              </button>
+            </div>
+          </div>
+        </transition>
+      </div>
+
+      <div class="relative">
+        <button
+          @click="openFilterDropdown = openFilterDropdown === 'role' ? null : 'role'"
+          class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border shadow-sm transition-all bg-white hover:bg-gray-50"
+          :class="filterRole ? 'border-[#ff6ec7] text-[#ff6ec7]' : 'border-gray-200 text-gray-600'"
+        >
+          <UserIcon class="w-4 h-4" />
+          {{ filterRole ? getUserRoleLabel(filterRole) : 'ทุกกลุ่มผู้ใช้' }}
+          <ChevronDownIcon
+            class="w-4 h-4 transition-transform duration-200"
+            :class="{ 'rotate-180': openFilterDropdown === 'role' }"
+          />
+        </button>
+        <transition
+          enter-active-class="transition ease-out duration-150"
+          enter-from-class="transform opacity-0 scale-95 translate-y-[-10px]"
+          enter-to-class="transform opacity-100 scale-100 translate-y-0"
+          leave-active-class="transition ease-in duration-100"
+          leave-from-class="transform opacity-100 scale-100 translate-y-0"
+          leave-to-class="transform opacity-0 scale-95 translate-y-[-10px]"
+        >
+          <div
+            v-if="openFilterDropdown === 'role'"
+            class="absolute z-50 mt-2 w-44 origin-top bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden"
+          >
+            <div class="p-2 flex flex-col gap-1">
+              <button
+                @click="filterRole = null; openFilterDropdown = null; currentPage = 1"
+                class="w-full text-left px-4 py-2.5 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+                :class="{ 'bg-gray-100': !filterRole }"
+              >
+                ทุกกลุ่มผู้ใช้
+              </button>
+              <button
+                v-for="(label, key) in userRoles"
+                :key="key"
+                @click="filterRole = key; openFilterDropdown = null; currentPage = 1"
+                class="w-full text-left px-4 py-2.5 rounded-xl text-sm font-bold text-gray-700 hover:bg-pink-50 hover:text-[#ff6ec7] transition-colors"
+                :class="{ 'bg-pink-50 text-[#ff6ec7]': filterRole === key }"
+              >
+                {{ label }}
+              </button>
+            </div>
+          </div>
+        </transition>
+      </div>
+
+      <button
+        v-if="filterTopic || filterRole"
+        @click="filterTopic = null; filterRole = null; currentPage = 1"
+        class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-100 transition-colors"
+      >
+        <XMarkIcon class="w-3.5 h-3.5" /> ล้างตัวกรอง
+      </button>
     </div>
 
     <div
@@ -94,11 +204,11 @@
         </div>
 
         <div
-          v-if="reports.length === 0"
+          v-if="filteredReports.length === 0"
           class="p-8 text-center text-gray-500 bg-white rounded-2xl border border-dashed"
         >
           <MegaphoneIcon class="w-10 h-10 text-gray-300 mx-auto mb-2" />
-          <p class="text-sm font-bold">ยังไม่มีข้อมูลเสียงสะท้อน</p>
+          <p class="text-sm font-bold">{{ filterTopic || filterRole ? 'ไม่พบรายการที่ตรงกับตัวกรอง' : 'ยังไม่มีข้อมูลเสียงสะท้อน' }}</p>
         </div>
       </div>
 
@@ -196,10 +306,10 @@
               </td>
             </tr>
 
-            <tr v-if="reports.length === 0">
+            <tr v-if="filteredReports.length === 0">
               <td colspan="3" class="p-16 text-center text-gray-500">
                 <MegaphoneIcon class="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                <p class="font-bold text-lg">ยังไม่มีข้อมูลเสียงสะท้อนในระบบ</p>
+                <p class="font-bold text-lg">{{ filterTopic || filterRole ? 'ไม่พบรายการที่ตรงกับตัวกรอง' : 'ยังไม่มีข้อมูลเสียงสะท้อนในระบบ' }}</p>
               </td>
             </tr>
           </tbody>
@@ -212,8 +322,8 @@
       >
         <span class="text-xs text-gray-500 font-bold text-center sm:text-left">
           แสดง {{ (currentPage - 1) * itemsPerPage + 1 }} ถึง
-          {{ Math.min(currentPage * itemsPerPage, reports.length) }} จากทั้งหมด
-          {{ reports.length }} รายการ
+          {{ Math.min(currentPage * itemsPerPage, filteredReports.length) }} จากทั้งหมด
+          {{ filteredReports.length }} รายการ
         </span>
 
         <div class="flex items-center gap-2 w-full sm:w-auto justify-center">
@@ -258,22 +368,68 @@
 
 <script setup>
 import { ref, onMounted, computed } from "vue";
-import { MegaphoneIcon } from "@heroicons/vue/24/solid";
+import {
+  MegaphoneIcon,
+  FunnelIcon,
+  ChevronDownIcon,
+  XMarkIcon,
+  UserIcon,
+} from "@heroicons/vue/24/solid";
 
 const reports = ref([]);
 const isLoading = ref(true);
 
+const openFilterDropdown = ref(null);
+const filterTopic = ref(null);
+const filterRole = ref(null);
+
+const topicStyles = {
+  feedback: {
+    label: "💡 เสนอแนะ",
+    class: "bg-blue-100 text-blue-700 border border-blue-200",
+    hoverClass: "hover:bg-blue-50 hover:text-blue-700",
+    activeClass: "bg-blue-50 text-blue-700",
+  },
+  complaint: {
+    label: "🚨 ร้องเรียน",
+    class: "bg-red-100 text-red-700 border border-red-200",
+    hoverClass: "hover:bg-red-50 hover:text-red-700",
+    activeClass: "bg-red-50 text-red-700",
+  },
+  inquiry: {
+    label: "❓ สอบถาม",
+    class: "bg-green-100 text-green-700 border border-green-200",
+    hoverClass: "hover:bg-green-50 hover:text-green-700",
+    activeClass: "bg-green-50 text-green-700",
+  },
+};
+
+const userRoles = {
+  student: "นักศึกษา",
+  staff: "บุคลากร",
+  alumni: "ศิษย์เก่า",
+  general: "บุคคลทั่วไป",
+};
+
 const currentPage = ref(1);
 const itemsPerPage = 10;
 
+const filteredReports = computed(() => {
+  return reports.value.filter((r) => {
+    if (filterTopic.value && r.topic_type !== filterTopic.value) return false;
+    if (filterRole.value && r.user_type !== filterRole.value) return false;
+    return true;
+  });
+});
+
 const totalPages = computed(() => {
-  return Math.ceil(reports.value.length / itemsPerPage) || 1;
+  return Math.ceil(filteredReports.value.length / itemsPerPage) || 1;
 });
 
 const paginatedReports = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
   const end = start + itemsPerPage;
-  return reports.value.slice(start, end);
+  return filteredReports.value.slice(start, end);
 });
 
 const nextPage = () => {
@@ -323,9 +479,7 @@ const fetchReports = async () => {
     const json = await res.json();
     if (json.status === "success") {
       reports.value = json.data;
-      if (currentPage.value > totalPages.value && totalPages.value > 0) {
-        currentPage.value = totalPages.value;
-      }
+      currentPage.value = 1;
     }
   } catch (e) {
     console.error("Error fetching reports:", e);

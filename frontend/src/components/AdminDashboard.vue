@@ -92,6 +92,9 @@ import {
 import EquipmentTab from "./admin/EquipmentTab.vue";
 import RequestsTab from "./admin/RequestsTab.vue";
 import ReportsTab from "./admin/ReportsTab.vue";
+import { useAlert } from "../composables/useAlert";
+
+const { showAlert } = useAlert();
 
 const router = useRouter();
 const activeTab = ref("equipment");
@@ -106,7 +109,7 @@ onMounted(async () => {
     if (data.user && data.user.app_metadata.role === "admin") {
       isAdmin.value = true;
     } else {
-      alert("คุณไม่มีสิทธิ์เข้าถึงหน้านี้");
+      await showAlert("คุณไม่มีสิทธิ์เข้าถึงหน้านี้", "error");
       router.push("/");
     }
   } catch (error) {

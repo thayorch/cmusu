@@ -18,9 +18,11 @@ class BorrowSubmit(BaseModel):
     full_name: str
     student_id: str
     contact_info: str
+    faculty: str
+    purpose_location: str
     borrow_date: date
     return_date: date
-    items: List[CartItem] 
+    items: List[CartItem]
 
 class EquipmentCreate(BaseModel):
     name: str

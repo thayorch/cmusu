@@ -23,7 +23,7 @@
               <th class="p-4 font-bold text-sm text-gray-600 w-48">
                 วันที่ยืม-คืน
               </th>
-              <th class="p-4 font-bold text-sm text-gray-600 w-48 text-center">
+              <th class="p-4 font-bold text-sm text-gray-600 w-56 text-center">
                 จัดการสถานะ
               </th>
             </tr>
@@ -107,37 +107,79 @@
                 </div>
               </td>
 
-              <td class="p-4 align-top pt-4 text-center">
-                <select
-                  :value="req.status"
-                  @change="handleStatusChange($event, req)"
-                  :disabled="req.status === 'returned'"
-                  class="px-4 py-2.5 rounded-xl text-sm font-bold border outline-none cursor-pointer shadow-sm transition-colors w-full text-center appearance-none"
-                  :class="{
-                    'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100':
-                      req.status === 'pending',
-                    'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100':
-                      req.status === 'approved',
-                    'bg-green-50 text-green-700 border-green-200 cursor-not-allowed opacity-80':
-                      req.status === 'returned',
-                  }"
-                >
-                  <option value="pending" class="text-gray-800 bg-white">
-                    ⏳ รออนุมัติ
-                  </option>
-                  <option value="approved" class="text-gray-800 bg-white">
-                    🔄 กำลังยืม
-                  </option>
-                  <option value="returned" class="text-gray-800 bg-white">
-                    ✅ คืนแล้ว
-                  </option>
-                </select>
-                <p
-                  v-if="req.status === 'returned'"
-                  class="text-[10px] text-gray-400 mt-2 font-bold italic"
-                >
-                  เสร็จสิ้นรายการ
-                </p>
+              <td class="p-4 align-top pt-4">
+                <div class="flex flex-col items-center gap-2">
+                  <!-- Custom Dropdown -->
+                  <div class="relative w-full" ref="dropdownRefs">
+                    <button
+                      @click="toggleDropdown(req.id)"
+                      :disabled="req.status === 'returned'"
+                      class="w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border outline-none transition-all shadow-sm"
+                      :class="[
+                        statusStyle(req.status).btn,
+                        req.status === 'returned'
+                          ? 'cursor-not-allowed opacity-80'
+                          : 'cursor-pointer',
+                      ]"
+                    >
+                      <span>{{ statusLabel(req.status) }}</span>
+                      <ChevronDownIcon
+                        v-if="req.status !== 'returned'"
+                        class="w-4 h-4 shrink-0 transition-transform"
+                        :class="openDropdownId === req.id ? 'rotate-180' : ''"
+                      />
+                    </button>
+
+                    <Transition
+                      enter-active-class="transition ease-out duration-150"
+                      enter-from-class="opacity-0 translate-y-1 scale-95"
+                      enter-to-class="opacity-100 translate-y-0 scale-100"
+                      leave-active-class="transition ease-in duration-100"
+                      leave-from-class="opacity-100 translate-y-0 scale-100"
+                      leave-to-class="opacity-0 translate-y-1 scale-95"
+                    >
+                      <div
+                        v-if="openDropdownId === req.id"
+                        class="absolute z-50 mt-1 w-full bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
+                      >
+                        <button
+                          v-for="opt in statusOptions"
+                          :key="opt.value"
+                          @click="selectStatus(opt.value, req)"
+                          class="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-bold text-left transition-colors"
+                          :class="[
+                            opt.hover,
+                            req.status === opt.value
+                              ? opt.active
+                              : 'text-gray-700',
+                          ]"
+                        >
+                          <span>{{ opt.label }}</span>
+                          <CheckIcon
+                            v-if="req.status === opt.value"
+                            class="w-4 h-4 ml-auto"
+                          />
+                        </button>
+                      </div>
+                    </Transition>
+                  </div>
+
+                  <p
+                    v-if="req.status === 'returned'"
+                    class="text-[10px] text-gray-400 font-bold italic"
+                  >
+                    เสร็จสิ้นรายการ
+                  </p>
+
+                  <!-- Delete Button -->
+                  <button
+                    @click="handleDelete(req)"
+                    class="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-red-500 border border-red-100 bg-red-50 hover:bg-red-100 hover:border-red-200 transition-colors cursor-pointer"
+                  >
+                    <TrashIcon class="w-3.5 h-3.5" />
+                    ลบรายการ
+                  </button>
+                </div>
               </td>
             </tr>
 
@@ -154,10 +196,57 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { ClipboardDocumentListIcon } from "@heroicons/vue/24/solid";
+import { ref, onMounted, onUnmounted } from "vue";
+import {
+  ClipboardDocumentListIcon,
+  ChevronDownIcon,
+  CheckIcon,
+  TrashIcon,
+} from "@heroicons/vue/24/solid";
+import { useAlert } from "../../composables/useAlert";
+
+const { showAlert, showConfirm } = useAlert();
 
 const borrowRequests = ref([]);
+const openDropdownId = ref(null);
+
+const statusOptions = [
+  {
+    value: "pending",
+    label: "⏳ รออนุมัติ",
+    btn: "bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100",
+    hover: "hover:bg-yellow-50",
+    active: "text-yellow-700 bg-yellow-50",
+  },
+  {
+    value: "approved",
+    label: "🔄 กำลังยืม",
+    btn: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100",
+    hover: "hover:bg-blue-50",
+    active: "text-blue-700 bg-blue-50",
+  },
+  {
+    value: "returned",
+    label: "✅ คืนแล้ว",
+    btn: "bg-green-50 text-green-700 border-green-200",
+    hover: "hover:bg-green-50",
+    active: "text-green-700 bg-green-50",
+  },
+];
+
+const statusLabel = (status) =>
+  statusOptions.find((o) => o.value === status)?.label ?? status;
+
+const statusStyle = (status) =>
+  statusOptions.find((o) => o.value === status) ?? statusOptions[0];
+
+const toggleDropdown = (id) => {
+  openDropdownId.value = openDropdownId.value === id ? null : id;
+};
+
+onMounted(() => {
+  fetchRequests();
+});
 
 const fetchRequests = async () => {
   try {
@@ -169,18 +258,15 @@ const fetchRequests = async () => {
   }
 };
 
-onMounted(fetchRequests);
+const selectStatus = async (newStatus, req) => {
+  openDropdownId.value = null;
+  if (newStatus === req.status) return;
 
-const handleStatusChange = async (event, req) => {
-  const newStatus = event.target.value;
-  const oldStatus = req.status;
-
-  if (
-    newStatus === "returned" &&
-    !confirm("ยืนยันการรับคืนอุปกรณ์? สินค้าจะถูกบวกกลับเข้าคลังทันที")
-  ) {
-    event.target.value = oldStatus;
-    return;
+  if (newStatus === "returned") {
+    const ok = await showConfirm(
+      "ยืนยันการรับคืนอุปกรณ์? สินค้าจะถูกบวกกลับเข้าคลังทันที",
+    );
+    if (!ok) return;
   }
 
   try {
@@ -188,13 +274,13 @@ const handleStatusChange = async (event, req) => {
       method: "GET",
       credentials: "include",
     });
-    const csrfData = await csrfRes.json();
+    const { csrf_token } = await csrfRes.json();
 
-    const res = await fetch(`/api/admin/requests/status`, {
+    const res = await fetch("/api/admin/requests/status", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "X-CSRF-Token": csrfData.csrf_token,
+        "X-CSRF-Token": csrf_token,
       },
       credentials: "include",
       body: JSON.stringify({ id: req.id, status: newStatus }),
@@ -203,12 +289,39 @@ const handleStatusChange = async (event, req) => {
     if (res.ok) {
       fetchRequests();
     } else {
-      alert("เกิดข้อผิดพลาดในการอัปเดตสถานะ");
-      event.target.value = oldStatus;
+      await showAlert("เกิดข้อผิดพลาดในการอัปเดตสถานะ", "error");
     }
   } catch (e) {
     console.error(e);
-    event.target.value = oldStatus;
+  }
+};
+
+const handleDelete = async (req) => {
+  const ok = await showConfirm(
+    `ลบรายการขอยืมของ "${req.full_name}" ใช่หรือไม่?`,
+  );
+  if (!ok) return;
+
+  try {
+    const csrfRes = await fetch("/api/csrf-token", {
+      method: "GET",
+      credentials: "include",
+    });
+    const { csrf_token } = await csrfRes.json();
+
+    const res = await fetch(`/api/admin/requests/${req.id}`, {
+      method: "DELETE",
+      headers: { "X-CSRF-Token": csrf_token },
+      credentials: "include",
+    });
+
+    if (res.ok) {
+      fetchRequests();
+    } else {
+      await showAlert("เกิดข้อผิดพลาดในการลบรายการ", "error");
+    }
+  } catch (e) {
+    console.error(e);
   }
 };
 </script>

@@ -10,8 +10,8 @@
       <div
         class="max-w-5xl mx-auto px-6 py-10 grid grid-cols-2 gap-8 sm:grid-cols-4"
       >
-        <RouterLink to="/">
-          <div class="col-span-2 sm:col-span-1">
+        <RouterLink to="/" class="col-span-2 sm:col-span-1">
+          <div>
             <img
               src="/logo-circle.png"
               alt="cmusu-logo"

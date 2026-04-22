@@ -243,6 +243,9 @@
 <script setup>
 import { ref, reactive } from "vue";
 import Navbar from "../components/Navbar.vue";
+import { useAlert } from "../composables/useAlert";
+
+const { showAlert } = useAlert();
 
 import {
   ChatBubbleBottomCenterTextIcon,
@@ -314,7 +317,7 @@ const submitForm = async () => {
 
     const result = await response.json();
 
-    alert("ส่งข้อมูลเรียบร้อยแล้ว ขอบคุณสำหรับข้อเสนอแนะครับ/ค่ะ");
+    await showAlert("ส่งข้อมูลเรียบร้อยแล้ว ขอบคุณสำหรับข้อเสนอแนะครับ/ค่ะ", "success");
 
     resetForm();
     isFormOpen.value = false;
