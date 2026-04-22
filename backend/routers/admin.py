@@ -165,3 +165,4 @@ async def get_all_reports():
         return {"status": "success", "data": res.data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
