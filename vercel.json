@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://subackend.vercel.app/:path*"
+      "source": "/api/(.*)",
+      "destination": "https://subackend.vercel.app/$1"
     }
   ]
 }
