@@ -26,7 +26,8 @@ app = FastAPI(
 
 # --- CORS configuration ---
 origins = [
-"https://subackend.vercel.app"
+"https://subackend.vercel.app",
+"cmusu.vercel.app"
 ]
 
 app.add_middleware(
