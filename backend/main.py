@@ -26,7 +26,7 @@ app = FastAPI(
 
 # --- CORS configuration ---
 origins = [
-"https://cmusu-alpha.vercel.app"
+"https://subackend.vercel.app"
 ]
 
 app.add_middleware(
@@ -60,7 +60,7 @@ async def health_check():
 
 @app.get("/")
 async def root():
-    return {"message": "Backend is running!"}
+    return {"message": "subackend is running!"}
     
 if __name__ == "__main__":
     import uvicorn
