@@ -143,12 +143,12 @@ import {
   BuildingLibraryIcon,
 } from "@heroicons/vue/24/solid";
 
-import EquipmentTab from "./admin/EquipmentTab.vue";
-import RequestsTab from "./admin/RequestsTab.vue";
-import ReportsTab from "./admin/ReportsTab.vue";
-import NewsTab from "./admin/NewsTab.vue";
-import ActivityTab from "./admin/ActivityTab.vue";
-import FacultyEquipmentTab from "./admin/FacultyEquipmentTab.vue";
+import EquipmentTab from "./Admin/EquipmentTab.vue";
+import RequestsTab from "./Admin/RequestsTab.vue";
+import ReportsTab from "./Admin/ReportsTab.vue";
+import NewsTab from "./Admin/NewsTab.vue";
+import ActivityTab from "./Admin/ActivityTab.vue";
+import FacultyEquipmentTab from "./Admin/FacultyEquipmentTab.vue";
 import { useAlert } from "../composables/useAlert";
 
 const { showAlert } = useAlert();
