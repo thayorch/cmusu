@@ -1,0 +1,10 @@
+{
+  "experimentalServices": {
+    "rewrites": [
+      {
+        "source": "/api/:path*",
+        "destination": "https://subackend.vercel.app/:path*"
+      }
+    ]
+  }
+}

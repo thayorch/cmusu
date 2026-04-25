@@ -12,7 +12,7 @@ export default defineConfig({
     },
     proxy: {
       "/api": {
-        target: "http://backend:8000/",
+        target: "https://subackend.vercel.app/",
         changeOrigin: true,
       },
     },
