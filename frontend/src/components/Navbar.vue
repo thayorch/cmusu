@@ -115,7 +115,7 @@
                 class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-black/5 transition-colors"
                 style="color: #5a4a7a"
               >
-                <component :is="c.icon" class="w-5 h-5 opacity-75" />
+                <SocialIcon :name="c.icon" :size="20" class="opacity-75" />
                 <span class="text-sm font-medium">{{ c.label }}</span>
               </a>
             </div>
@@ -132,7 +132,6 @@ import RouterLinkBtn from "./utils/RouterLink-btn.vue";
 
 // นำเข้าไอคอนทั้งหมดให้ตรงกับ Footer
 import {
-  HomeIcon,
   CalendarDaysIcon,
   WrenchScrewdriverIcon,
   ExclamationTriangleIcon,
@@ -140,14 +139,11 @@ import {
   MegaphoneIcon,
   CalendarIcon,
   DocumentTextIcon,
-  UsersIcon,
-  CameraIcon,
-  EnvelopeIcon,
-  MapPinIcon,
   KeyIcon,
   Bars3Icon,
   XMarkIcon,
 } from "@heroicons/vue/24/solid";
+import SocialIcon from "./SocialIcon.vue";
 
 const isMenuOpen = ref(false);
 
@@ -184,22 +180,22 @@ const info = [
 
 const contacts = [
   {
-    icon: UsersIcon,
+    icon: "facebook",
     label: "Facebook",
     href: "https://www.facebook.com/ChiangmaiUniversityStudentUnion",
   },
   {
-    icon: CameraIcon,
+    icon: "instagram",
     label: "Instagram",
     href: "https://www.instagram.com/cmusu.official/",
   },
   {
-    icon: EnvelopeIcon,
+    icon: "email",
     label: "Email",
     href: "mailto:cmusu69@gmail.com",
   },
   {
-    icon: MapPinIcon,
+    icon: "map",
     label: "สำนักงานสโมสรนักศึกษา",
     href: "https://maps.app.goo.gl/63NjK7oH6DWdHwTS7",
   },

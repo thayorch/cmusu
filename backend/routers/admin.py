@@ -6,7 +6,7 @@ import traceback
 from db.database import supabase
 from dependencies import admin_required
 
-from models.schemas import EquipmentCreate, NewsCreate, UpdateStatus
+from models.schemas import EquipmentCreate, FacultyEquipmentCreate, NewsCreate, ActivityCreate, UpdateStatus
 from utils.email import send_status_email
 
 
@@ -196,6 +196,15 @@ async def upload_image(request: Request, file: UploadFile = File(...), csrf_prot
 # 📰 4. หมวดจัดการข่าวสาร (News)
 # ==========================================
 
+@router.get('/admin/news')
+async def get_all_news():
+    """ ดึงรายการข่าวสารทั้งหมด """
+    try:
+        res = supabase.table("news").select("*").order("created_at", desc=True).execute()
+        return {"status": "success", "data": res.data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post('/admin/news')
 async def create_news(request: Request, req: NewsCreate, csrf_protect: CsrfProtect = Depends()):
     """ เพิ่มข่าวสารใหม่ """
@@ -206,9 +215,126 @@ async def create_news(request: Request, req: NewsCreate, csrf_protect: CsrfProte
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.put('/admin/news/{news_id}')
+async def update_news(request: Request, news_id: str, req: NewsCreate, csrf_protect: CsrfProtect = Depends()):
+    """ แก้ไขข่าวสาร """
+    await csrf_protect.validate_csrf(request)
+    try:
+        supabase.table("news").update(req.dict()).eq("id", news_id).execute()
+        return {"status": "success", "message": "แก้ไขข่าวสารเรียบร้อย"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete('/admin/news/{news_id}')
+async def delete_news(request: Request, news_id: str, csrf_protect: CsrfProtect = Depends()):
+    """ ลบข่าวสาร """
+    await csrf_protect.validate_csrf(request)
+    try:
+        supabase.table("news").delete().eq("id", news_id).execute()
+        return {"status": "success", "message": "ลบข่าวสารเรียบร้อย"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 # ==========================================
-# 📢 5. หมวดจัดการเสียงสะท้อน (VOC)
+# 📅 5. หมวดจัดการตารางกิจกรรม (Activity)
+# ==========================================
+
+@router.get('/admin/activity')
+async def get_all_activity():
+    """ ดึงรายการกิจกรรมทั้งหมด """
+    try:
+        res = supabase.table("activities").select("*").order("time_seq").execute()
+        return {"status": "success", "data": res.data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post('/admin/activity')
+async def create_activity(request: Request, req: ActivityCreate, csrf_protect: CsrfProtect = Depends()):
+    """ เพิ่มกิจกรรมใหม่ """
+    await csrf_protect.validate_csrf(request)
+    try:
+        supabase.table("activities").insert(req.dict()).execute()
+        return {"status": "success", "message": "เพิ่มกิจกรรมเรียบร้อย"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put('/admin/activity/{activity_id}')
+async def update_activity(request: Request, activity_id: str, req: ActivityCreate, csrf_protect: CsrfProtect = Depends()):
+    """ แก้ไขกิจกรรม """
+    await csrf_protect.validate_csrf(request)
+    try:
+        supabase.table("activities").update(req.dict()).eq("id", activity_id).execute()
+        return {"status": "success", "message": "แก้ไขกิจกรรมเรียบร้อย"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete('/admin/activity/{activity_id}')
+async def delete_activity(request: Request, activity_id: str, csrf_protect: CsrfProtect = Depends()):
+    """ ลบกิจกรรม """
+    await csrf_protect.validate_csrf(request)
+    try:
+        supabase.table("activities").delete().eq("id", activity_id).execute()
+        return {"status": "success", "message": "ลบกิจกรรมเรียบร้อย"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==========================================
+# 🏫 6. หมวดจัดการครุภัณฑ์ประจำคณะ (Faculty Equipments)
+# ==========================================
+
+@router.get('/admin/faculty-equipment')
+async def get_all_faculty_equipment():
+    try:
+        res = supabase.table("faculties_equipments").select("*").order("faculty_id").execute()
+        return {"status": "success", "data": res.data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post('/admin/faculty-equipment')
+async def create_faculty_equipment(request: Request, req: FacultyEquipmentCreate, csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
+    try:
+        data = req.dict()
+        data["available_quantity"] = req.total_quantity
+        supabase.table("faculties_equipments").insert(data).execute()
+        return {"status": "success", "message": "เพิ่มครุภัณฑ์ประจำคณะเรียบร้อย"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put('/admin/faculty-equipment/{item_id}')
+async def update_faculty_equipment(request: Request, item_id: str, req: FacultyEquipmentCreate, csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
+    try:
+        current = supabase.table("faculties_equipments").select("total_quantity", "available_quantity").eq("id", item_id).single().execute()
+        old_total = current.data["total_quantity"]
+        old_available = current.data["available_quantity"]
+        diff = req.total_quantity - old_total
+        new_available = old_available + diff
+        if new_available < 0:
+            raise HTTPException(status_code=400, detail="ไม่สามารถลดจำนวนรวมต่ำกว่าจำนวนที่มีคนยืมอยู่ได้")
+        data = req.dict()
+        data["available_quantity"] = new_available
+        supabase.table("faculties_equipments").update(data).eq("id", item_id).execute()
+        return {"status": "success", "message": "อัปเดตข้อมูลเรียบร้อย"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete('/admin/faculty-equipment/{item_id}')
+async def delete_faculty_equipment(request: Request, item_id: str, csrf_protect: CsrfProtect = Depends()):
+    await csrf_protect.validate_csrf(request)
+    try:
+        supabase.table("faculties_equipments").delete().eq("id", item_id).execute()
+        return {"status": "success", "message": "ลบครุภัณฑ์ประจำคณะเรียบร้อย"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==========================================
+# 📢 7. หมวดจัดการเสียงสะท้อน (VOC)
 # ==========================================
 
 @router.get('/admin/reports')

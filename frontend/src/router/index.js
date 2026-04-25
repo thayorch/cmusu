@@ -8,6 +8,7 @@ const Borrow = () => import("../Pages/Borrow.vue");
 const Report = () => import("../Pages/Report.vue");
 const BorrowCentral = () => import("../Pages/BorrowCentral.vue");
 const BorrowFaculty = () => import("../Pages/BorrowFaculty.vue");
+const AdminLogin = () => import("../Pages/AdminLogin.vue");
 
 const routes = [
   {
@@ -34,6 +35,10 @@ const routes = [
   {
     path: "/admin",
     component: Admin,
+  },
+  {
+    path: "/admin/login",
+    component: AdminLogin,
   },
   {
     path: "/borrow-central",

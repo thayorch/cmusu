@@ -3,35 +3,35 @@
     <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
       <div>
         <h3 class="text-2xl md:text-3xl font-black text-dark mb-1 flex items-center gap-2">
-          <NewspaperIcon class="w-7 h-7 md:w-8 md:h-8 text-[#ff6ec7]" />
-          จัดการข่าวสาร
+          <CalendarDaysIcon class="w-7 h-7 md:w-8 md:h-8 text-[#ffd166]" />
+          จัดการตารางกิจกรรม
         </h3>
-        <p class="text-gray-500 text-sm">ดู เพิ่ม แก้ไข หรือลบข่าวสารในระบบ</p>
+        <p class="text-gray-500 text-sm">ดู เพิ่ม แก้ไข หรือลบกิจกรรมในระบบ</p>
       </div>
       <button
         @click="openModal('add')"
         class="w-full md:w-auto px-6 py-3 bg-gray-900 hover:bg-black text-white font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
       >
         <PlusIcon class="w-5 h-5" />
-        เพิ่มข่าวสารใหม่
+        เพิ่มกิจกรรมใหม่
       </button>
     </div>
 
     <div v-if="isLoading" class="text-center py-20 text-gray-400">
       <div class="inline-flex flex-col items-center gap-3">
-        <div class="w-8 h-8 border-4 border-[#ff6ec7]/30 border-t-[#ff6ec7] rounded-full animate-spin" />
+        <div class="w-8 h-8 border-4 border-[#ffd166]/30 border-t-[#ffd166] rounded-full animate-spin" />
         <span class="text-sm font-medium">กำลังโหลดข้อมูล...</span>
       </div>
     </div>
 
-    <div v-else-if="newsList.length === 0" class="text-center py-20 text-gray-400">
-      <NewspaperIcon class="w-12 h-12 mx-auto mb-3 opacity-30" />
-      <p class="font-medium">ยังไม่มีข่าวสารในระบบ</p>
+    <div v-else-if="activities.length === 0" class="text-center py-20 text-gray-400">
+      <CalendarDaysIcon class="w-12 h-12 mx-auto mb-3 opacity-30" />
+      <p class="font-medium">ยังไม่มีกิจกรรมในระบบ</p>
     </div>
 
     <div v-else class="flex flex-col gap-3">
       <div
-        v-for="item in newsList"
+        v-for="item in activities"
         :key="item.id"
         class="glass rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-3 hover:shadow-md transition-all"
       >
@@ -41,12 +41,15 @@
               class="px-2 py-0.5 rounded-full text-xs font-bold text-white"
               :style="`background-color: ${item.item_color}`"
             >
-              {{ item.category }}
+              {{ item.phase }}
             </span>
-            <span class="text-xs text-gray-400">{{ item.month_group }} · {{ item.day_string }}</span>
+            <span class="text-xs text-gray-400">{{ item.month_group }} · {{ item.time_seq }}</span>
+            <span v-if="item.badge" class="px-2 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-600">
+              {{ item.badge }}
+            </span>
           </div>
           <p class="font-bold text-gray-900 text-sm leading-snug line-clamp-1">{{ item.title }}</p>
-          <p class="text-xs text-gray-400 mt-0.5 line-clamp-1">{{ item.description }}</p>
+          <p class="text-xs text-gray-400 mt-0.5 line-clamp-1">{{ item.location_desc }}</p>
         </div>
         <div class="flex gap-2 shrink-0">
           <button
@@ -57,7 +60,7 @@
             แก้ไข
           </button>
           <button
-            @click="deleteNews(item.id)"
+            @click="deleteActivity(item.id)"
             class="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-colors border border-red-100 hover:border-red-500"
           >
             <TrashIcon class="w-3.5 h-3.5" />
@@ -100,21 +103,21 @@
               </button>
 
               <h3 class="text-xl font-black mb-0.5">
-                {{ isEditing ? "แก้ไขข่าวสาร" : "เพิ่มข่าวสารใหม่" }}
+                {{ isEditing ? "แก้ไขกิจกรรม" : "เพิ่มกิจกรรมใหม่" }}
               </h3>
-              <p class="text-gray-400 text-sm mb-6">กรอกรายละเอียดข่าวสาร</p>
+              <p class="text-gray-400 text-sm mb-6">กรอกรายละเอียดกิจกรรม</p>
 
-              <form @submit.prevent="submitNews" class="space-y-4">
+              <form @submit.prevent="submitActivity" class="space-y-4">
                 <div>
                   <label class="block text-sm font-bold mb-1.5 text-gray-700">
-                    หัวข้อข่าว <span class="text-red-500">*</span>
+                    ชื่อกิจกรรม <span class="text-red-500">*</span>
                   </label>
                   <input
                     v-model="form.title"
                     type="text"
                     required
-                    placeholder="เช่น ประกาศรับสมัครนักศึกษา"
-                    class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#ff6ec7]/40 focus:border-[#ff6ec7] transition-all"
+                    placeholder="เช่น ประชุมนักศึกษา"
+                    class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#ffd166]/60 focus:border-[#ffd166] transition-all"
                   />
                 </div>
 
@@ -128,69 +131,94 @@
                       type="text"
                       required
                       placeholder="เช่น มิถุนายน 2568"
-                      class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#ff6ec7]/40 focus:border-[#ff6ec7] transition-all"
+                      class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#ffd166]/60 focus:border-[#ffd166] transition-all"
                     />
                   </div>
                   <div>
                     <label class="block text-sm font-bold mb-1.5 text-gray-700">
-                      วันที่แสดง <span class="text-red-500">*</span>
+                      ลำดับเวลา <span class="text-red-500">*</span>
                     </label>
                     <input
-                      v-model="form.day_string"
+                      v-model="form.time_seq"
                       type="text"
                       required
-                      placeholder="เช่น 15 มิ.ย."
-                      class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#ff6ec7]/40 focus:border-[#ff6ec7] transition-all"
+                      placeholder="เช่น 2568-06-15"
+                      class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#ffd166]/60 focus:border-[#ffd166] transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-bold mb-1.5 text-gray-700">
+                      ช่วงเวลา (Phase) <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                      v-model="form.phase"
+                      type="text"
+                      required
+                      placeholder="เช่น ต้นภาค"
+                      class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#ffd166]/60 focus:border-[#ffd166] transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-bold mb-1.5 text-gray-700">Badge</label>
+                    <input
+                      v-model="form.badge"
+                      type="text"
+                      placeholder="เช่น สำคัญ"
+                      class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#ffd166]/60 focus:border-[#ffd166] transition-all"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label class="block text-sm font-bold mb-1.5 text-gray-700">หมวดหมู่</label>
-                  <input
-                    v-model="form.category"
-                    type="text"
-                    placeholder="เช่น ประกาศ"
-                    class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#ff6ec7]/40 focus:border-[#ff6ec7] transition-all"
+                  <label class="block text-sm font-bold mb-1.5 text-gray-700">สถานที่/รายละเอียด</label>
+                  <textarea
+                    v-model="form.location_desc"
+                    rows="2"
+                    placeholder="เช่น ห้องประชุมใหญ่ ชั้น 3 อาคาร..."
+                    class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#ffd166]/60 focus:border-[#ffd166] transition-all resize-none"
                   />
                 </div>
 
                 <IconPicker v-model="form.icon_name" :preview-color="form.item_color" />
 
-                <div>
-                  <label class="block text-sm font-bold mb-1.5 text-gray-700">รายละเอียด</label>
-                  <textarea
-                    v-model="form.description"
-                    rows="2"
-                    placeholder="รายละเอียดข่าวสารโดยย่อ..."
-                    class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#ff6ec7]/40 focus:border-[#ff6ec7] transition-all resize-none"
-                  />
-                </div>
-
-                <div>
-                  <label class="block text-sm font-bold mb-1.5 text-gray-700">ลิงก์ (href)</label>
-                  <input
-                    v-model="form.href"
-                    type="text"
-                    placeholder="https://... หรือ #"
-                    class="w-full px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#ff6ec7]/40 focus:border-[#ff6ec7] transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label class="block text-sm font-bold mb-1.5 text-gray-700">สีรายการ</label>
-                  <div class="flex items-center gap-3">
-                    <input
-                      v-model="form.item_color"
-                      type="color"
-                      class="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer"
-                    />
-                    <input
-                      v-model="form.item_color"
-                      type="text"
-                      class="flex-1 px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#ff6ec7]/40 focus:border-[#ff6ec7] transition-all font-mono text-sm"
-                    />
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-bold mb-1.5 text-gray-700">สีรายการ</label>
+                    <div class="flex items-center gap-2">
+                      <input v-model="form.item_color" type="color" class="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer" />
+                      <input
+                        v-model="form.item_color"
+                        type="text"
+                        class="flex-1 px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#ffd166]/60 transition-all font-mono text-sm"
+                      />
+                    </div>
                   </div>
+                  <div>
+                    <label class="block text-sm font-bold mb-1.5 text-gray-700">สีกลุ่ม</label>
+                    <div class="flex items-center gap-2">
+                      <input v-model="form.group_color" type="color" class="w-10 h-10 rounded-lg border border-gray-200 cursor-pointer" />
+                      <input
+                        v-model="form.group_color"
+                        type="text"
+                        class="flex-1 px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#ffd166]/60 transition-all font-mono text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                  <input
+                    v-model="form.is_highlight"
+                    type="checkbox"
+                    id="highlight"
+                    class="w-4 h-4 accent-[#ffd166] rounded cursor-pointer"
+                  />
+                  <label for="highlight" class="text-sm font-bold text-gray-700 cursor-pointer">
+                    Highlight กิจกรรมนี้
+                  </label>
                 </div>
 
                 <div class="flex gap-3 pt-2">
@@ -206,7 +234,7 @@
                     :disabled="isSubmitting"
                     class="flex-1 py-3 text-white font-bold rounded-xl bg-gray-900 hover:bg-black transition-colors disabled:opacity-50"
                   >
-                    {{ isSubmitting ? "กำลังบันทึก..." : isEditing ? "บันทึกการแก้ไข" : "เพิ่มข่าวสาร" }}
+                    {{ isSubmitting ? "กำลังบันทึก..." : isEditing ? "บันทึกการแก้ไข" : "เพิ่มกิจกรรม" }}
                   </button>
                 </div>
               </form>
@@ -220,7 +248,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from "vue";
-import { NewspaperIcon, PlusIcon, PencilIcon, TrashIcon, XMarkIcon } from "@heroicons/vue/24/solid";
+import { CalendarDaysIcon, PlusIcon, PencilIcon, TrashIcon, XMarkIcon } from "@heroicons/vue/24/solid";
 import { useAlert } from "../../composables/useAlert";
 import { useCsrf } from "../../composables/useCsrf";
 import IconPicker from "./IconPicker.vue";
@@ -228,7 +256,7 @@ import IconPicker from "./IconPicker.vue";
 const { showAlert, showConfirm } = useAlert();
 const { getCsrfToken } = useCsrf();
 
-const newsList = ref([]);
+const activities = ref([]);
 const isLoading = ref(false);
 const isSubmitting = ref(false);
 const isModalOpen = ref(false);
@@ -237,21 +265,23 @@ const editingId = ref(null);
 
 const form = reactive({
   month_group: "",
-  day_string: "",
-  category: "",
+  time_seq: "",
+  phase: "",
   title: "",
-  description: "",
-  href: "#",
+  location_desc: "",
+  badge: "",
   item_color: "#A259FF",
-  icon_name: "NewspaperIcon",
+  group_color: "#A259FF",
+  icon_name: "CalendarDaysIcon",
+  is_highlight: false,
 });
 
-const fetchNews = async () => {
+const fetchActivities = async () => {
   isLoading.value = true;
   try {
-    const res = await fetch("/api/admin/news", { credentials: "include" });
+    const res = await fetch("/api/admin/activity", { credentials: "include" });
     const json = await res.json();
-    if (json.status === "success") newsList.value = json.data;
+    if (json.status === "success") activities.value = json.data;
   } catch (e) {
     console.error(e);
   } finally {
@@ -259,7 +289,7 @@ const fetchNews = async () => {
   }
 };
 
-onMounted(fetchNews);
+onMounted(fetchActivities);
 
 const openModal = (mode, item = null) => {
   if (mode === "edit" && item) {
@@ -267,13 +297,15 @@ const openModal = (mode, item = null) => {
     editingId.value = item.id;
     Object.assign(form, {
       month_group: item.month_group,
-      day_string: item.day_string,
-      category: item.category,
+      time_seq: item.time_seq,
+      phase: item.phase,
       title: item.title,
-      description: item.description,
-      href: item.href || "#",
+      location_desc: item.location_desc,
+      badge: item.badge || "",
       item_color: item.item_color || "#A259FF",
-      icon_name: item.icon_name || "NewspaperIcon",
+      group_color: item.group_color || "#A259FF",
+      icon_name: item.icon_name || "CalendarDaysIcon",
+      is_highlight: item.is_highlight || false,
     });
   } else {
     isEditing.value = false;
@@ -289,31 +321,34 @@ const closeModal = () => {
 
 const resetForm = () => {
   form.month_group = "";
-  form.day_string = "";
-  form.category = "";
+  form.time_seq = "";
+  form.phase = "";
   form.title = "";
-  form.description = "";
-  form.href = "#";
+  form.location_desc = "";
+  form.badge = "";
   form.item_color = "#A259FF";
-  form.icon_name = "NewspaperIcon";
+  form.group_color = "#A259FF";
+  form.icon_name = "CalendarDaysIcon";
+  form.is_highlight = false;
 };
 
-const submitNews = async () => {
+const submitActivity = async () => {
   isSubmitting.value = true;
   try {
     const token = await getCsrfToken();
-    const url = isEditing.value ? `/api/admin/news/${editingId.value}` : "/api/admin/news";
+    const payload = { ...form, badge: form.badge || null };
+    const url = isEditing.value ? `/api/admin/activity/${editingId.value}` : "/api/admin/activity";
     const res = await fetch(url, {
       method: isEditing.value ? "PUT" : "POST",
       headers: { "Content-Type": "application/json", "X-CSRF-Token": token },
       credentials: "include",
-      body: JSON.stringify(form),
+      body: JSON.stringify(payload),
     });
     const data = await res.json();
     if (res.ok) {
       await showAlert(data.message || "บันทึกเรียบร้อย", "success");
       closeModal();
-      fetchNews();
+      fetchActivities();
     } else {
       await showAlert(data.detail || "เกิดข้อผิดพลาด", "error");
     }
@@ -325,11 +360,11 @@ const submitNews = async () => {
   }
 };
 
-const deleteNews = async (id) => {
-  if (!(await showConfirm("ลบข่าวสารนี้?"))) return;
+const deleteActivity = async (id) => {
+  if (!(await showConfirm("ลบกิจกรรมนี้?"))) return;
   try {
     const token = await getCsrfToken();
-    const res = await fetch(`/api/admin/news/${id}`, {
+    const res = await fetch(`/api/admin/activity/${id}`, {
       method: "DELETE",
       headers: { "X-CSRF-Token": token },
       credentials: "include",
@@ -337,7 +372,7 @@ const deleteNews = async (id) => {
     const data = await res.json();
     if (res.ok) {
       await showAlert(data.message || "ลบเรียบร้อย", "success");
-      fetchNews();
+      fetchActivities();
     } else {
       await showAlert(data.detail || "เกิดข้อผิดพลาด", "error");
     }

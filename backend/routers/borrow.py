@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, Request, HTTPException
 from fastapi_csrf_protect import CsrfProtect
 from db.database import supabase
 from models.schemas import BorrowSubmit
+from utils.email import send_status_email
 
 router = APIRouter()
 
@@ -13,18 +14,25 @@ async def get_central_equipments():
         return {"status": "success", "data": res.data}
     except Exception as e:
         return {"status": "error", "message": str(e)}
-        
+
 @router.post('/borrow/request')
-async def submit_borrow_request(request: Request, req: BorrowSubmit, csrf_protect: CsrfProtect = Depends()):
+async def submit_borrow_request(
+    request: Request,
+    req: BorrowSubmit,
+    background_tasks: BackgroundTasks,
+    csrf_protect: CsrfProtect = Depends(),
+):
     await csrf_protect.validate_csrf(request)
-    
+
     token = request.cookies.get("access_token")
     if not token:
         raise HTTPException(status_code=401, detail="Unauthorized")
-        
+
     try:
         user_res = supabase.auth.get_user(token)
-        user_id = user_res.user.id
+        user = user_res.user
+        user_id = user.id
+        user_email = user.email or ""
     except:
         raise HTTPException(status_code=401, detail="Invalid Session")
 
@@ -40,11 +48,45 @@ async def submit_borrow_request(request: Request, req: BorrowSubmit, csrf_protec
             "p_return_date": str(req.return_date),
             "p_items": [item.dict() for item in req.items]
         }
-        
-        res = supabase.rpc("checkout_borrow_cart", rpc_payload).execute()
-        
+
+        supabase.rpc("checkout_borrow_cart", rpc_payload).execute()
+
+        eq_ids = [item.equipment_id for item in req.items]
+        eq_res = supabase.table("equipments").select("id, name, image_url").in_("id", eq_ids).execute()
+        eq_map = {row["id"]: row for row in eq_res.data}
+
+        email_items = [
+            {
+                "name": eq_map.get(item.equipment_id, {}).get("name", ""),
+                "image_url": eq_map.get(item.equipment_id, {}).get("image_url", ""),
+                "quantity": item.quantity,
+            }
+            for item in req.items
+        ]
+
+        if user_email:
+            background_tasks.add_task(
+                send_status_email,
+                to_email=user_email,
+                full_name=req.full_name,
+                status="pending",
+                borrow_date=str(req.borrow_date),
+                return_date=str(req.return_date),
+                items=email_items,
+            )
+
         return {"status": "success", "message": "ส่งคำร้องขอยืมสำเร็จ รอการอนุมัติ"}
-        
+
     except Exception as e:
-        # ถ้าของหมด หรือมี Error ระบบจะเด้งมาตรงนี้
+        print(e)
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.get('/borrow/faculty/{faculty_id}')
+async def get_faculty_data(faculty_id: str):
+    try:
+        res = supabase.table("faculties_equipments").select("*").eq("faculty_id", faculty_id).execute()
+        return {"status": "success", "data": res.data}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+    

@@ -41,6 +41,25 @@ class NewsCreate(BaseModel):
     item_color: str = "#A259FF"
     icon_name: str = "NewspaperIcon"
 
+class ActivityCreate(BaseModel):
+    month_group: str
+    time_seq: str
+    phase: str
+    title: str
+    location_desc: str
+    badge: Optional[str] = None
+    item_color: str = "#A259FF"
+    group_color: str = "#A259FF"
+    icon_name: str = "CalendarDaysIcon"
+    is_highlight: bool = False
+
+class FacultyEquipmentCreate(BaseModel):
+    name: str
+    description: str
+    image_url: str
+    total_quantity: int
+    faculty_id: str
+
 class UpdateStatus(BaseModel):
     id: str
     status: str

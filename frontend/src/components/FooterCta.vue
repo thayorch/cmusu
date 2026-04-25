@@ -88,7 +88,7 @@
                 style="color: #5a4a7a; opacity: 0.75"
                 :aria-label="c.label"
               >
-                <component :is="c.icon" class="w-4 h-4" aria-hidden="true" />
+                <SocialIcon :name="c.icon" :size="16" />
                 {{ c.label }}
               </a>
             </li>
@@ -127,12 +127,9 @@ import {
   MegaphoneIcon,
   CalendarIcon,
   DocumentTextIcon,
-  UsersIcon,
-  CameraIcon,
-  EnvelopeIcon,
-  MapPinIcon,
   KeyIcon,
 } from "@heroicons/vue/24/solid";
+import SocialIcon from "./SocialIcon.vue";
 
 const services = [
   { icon: MegaphoneIcon, label: "ข่าวสารและประกาศ", to: "/news" },
@@ -171,22 +168,22 @@ const info = [
 
 const contacts = [
   {
-    icon: UsersIcon,
+    icon: "facebook",
     label: "Facebook",
     href: "https://www.facebook.com/ChiangmaiUniversityStudentUnion",
   },
   {
-    icon: CameraIcon,
+    icon: "instagram",
     label: "Instagram",
     href: "https://www.instagram.com/cmusu.official/",
   },
   {
-    icon: EnvelopeIcon,
+    icon: "email",
     label: "Email",
     href: "mailto:cmusu69@gmail.com",
   },
   {
-    icon: MapPinIcon,
+    icon: "map",
     label: "สำนักงานสโมสรนักศึกษา",
     href: "https://maps.app.goo.gl/63NjK7oH6DWdHwTS7",
   },

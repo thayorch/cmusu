@@ -55,16 +55,63 @@
           </button>
 
           <button
+            @click="activeTab = 'news'"
+            :class="
+              activeTab === 'news'
+                ? 'bg-[#ff6ec7] text-white shadow-md'
+                : 'hover:bg-gray-100 text-gray-600 bg-white/50 md:bg-transparent'
+            "
+            class="shrink-0 whitespace-nowrap w-auto md:w-full flex items-center gap-2 md:gap-3 px-4 py-2.5 md:py-3 rounded-xl text-sm font-bold transition-all border md:border-none border-gray-100"
+          >
+            <NewspaperIcon class="w-4 h-4 md:w-5 md:h-5" />
+            ข่าวสาร
+          </button>
+
+          <button
+            @click="activeTab = 'activity'"
+            :class="
+              activeTab === 'activity'
+                ? 'bg-[#ffd166] text-gray-900 shadow-md'
+                : 'hover:bg-gray-100 text-gray-600 bg-white/50 md:bg-transparent'
+            "
+            class="shrink-0 whitespace-nowrap w-auto md:w-full flex items-center gap-2 md:gap-3 px-4 py-2.5 md:py-3 rounded-xl text-sm font-bold transition-all border md:border-none border-gray-100"
+          >
+            <CalendarDaysIcon class="w-4 h-4 md:w-5 md:h-5" />
+            กิจกรรม
+          </button>
+
+          <button
+            @click="activeTab = 'faculty-equipment'"
+            :class="
+              activeTab === 'faculty-equipment'
+                ? 'bg-[#43b89c] text-white shadow-md'
+                : 'hover:bg-gray-100 text-gray-600 bg-white/50 md:bg-transparent'
+            "
+            class="shrink-0 whitespace-nowrap w-auto md:w-full flex items-center gap-2 md:gap-3 px-4 py-2.5 md:py-3 rounded-xl text-sm font-bold transition-all border md:border-none border-gray-100"
+          >
+            <BuildingLibraryIcon class="w-4 h-4 md:w-5 md:h-5" />
+            ครุภัณฑ์คณะ
+          </button>
+
+          <button
             @click="activeTab = 'reports'"
             :class="
               activeTab === 'reports'
-                ? 'bg-[#ff6ec7] text-white shadow-md'
+                ? 'bg-gray-700 text-white shadow-md'
                 : 'hover:bg-gray-100 text-gray-600 bg-white/50 md:bg-transparent'
             "
             class="shrink-0 whitespace-nowrap w-auto md:w-full flex items-center gap-2 md:gap-3 px-4 py-2.5 md:py-3 rounded-xl text-sm font-bold transition-all border md:border-none border-gray-100"
           >
             <MegaphoneIcon class="w-4 h-4 md:w-5 md:h-5" />
             VOC
+          </button>
+
+          <button
+            @click="logout"
+            class="hover:bg-gray-100 text-red-600 bg-white/50 md:bg-transparent shrink-0 whitespace-nowrap w-auto md:w-full flex items-center gap-2 md:gap-3 px-4 py-2.5 md:py-3 rounded-xl text-sm font-bold transition-all border md:border-none border-gray-100"
+          >
+            <PowerIcon class="w-4 h-4 md:w-5 md:h-5" />
+            ออกจากระบบ
           </button>
         </nav>
       </div>
@@ -73,6 +120,9 @@
     <div class="flex-1 w-full max-w-full overflow-hidden">
       <EquipmentTab v-if="activeTab === 'equipment'" />
       <RequestsTab v-if="activeTab === 'requests'" />
+      <NewsTab v-if="activeTab === 'news'" />
+      <ActivityTab v-if="activeTab === 'activity'" />
+      <FacultyEquipmentTab v-if="activeTab === 'faculty-equipment'" />
       <ReportsTab v-if="activeTab === 'reports'" />
     </div>
   </section>
@@ -87,33 +137,42 @@ import {
   ArchiveBoxIcon,
   ClipboardDocumentListIcon,
   MegaphoneIcon,
+  NewspaperIcon,
+  CalendarDaysIcon,
+  PowerIcon,
+  BuildingLibraryIcon,
 } from "@heroicons/vue/24/solid";
 
 import EquipmentTab from "./admin/EquipmentTab.vue";
 import RequestsTab from "./admin/RequestsTab.vue";
 import ReportsTab from "./admin/ReportsTab.vue";
+import NewsTab from "./admin/NewsTab.vue";
+import ActivityTab from "./admin/ActivityTab.vue";
+import FacultyEquipmentTab from "./admin/FacultyEquipmentTab.vue";
 import { useAlert } from "../composables/useAlert";
 
 const { showAlert } = useAlert();
-
 const router = useRouter();
 const activeTab = ref("equipment");
 const isAdmin = ref(false);
 const isChecking = ref(true);
+const logout = async () => {
+  await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+  window.location.reload();
+};
 
 onMounted(async () => {
   try {
     const res = await fetch("/api/auth/me", { credentials: "include" });
     const data = await res.json();
 
-    if (data.user && data.user.app_metadata.role === "admin") {
+    if (data.user && data.user.app_metadata?.role === "admin") {
       isAdmin.value = true;
     } else {
-      await showAlert("คุณไม่มีสิทธิ์เข้าถึงหน้านี้", "error");
-      router.push("/");
+      router.replace("/admin/login?error=unauthorized");
     }
   } catch (error) {
-    router.push("/borrow-central");
+    router.replace("/admin/login");
   } finally {
     isChecking.value = false;
   }

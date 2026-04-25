@@ -106,13 +106,13 @@
       class="flex gap-4 flex-wrap justify-center z-10 my-12"
       style="animation: slideUp 0.6s 0.45s ease both"
     >
-      <button
+      <!-- <button
         @click="router.push('/news')"
         class="sticker-btn text-white flex items-center justify-center gap-2 hover:cursor-pointer"
         style="background: linear-gradient(#903ffb, #541e96)"
       >
         <SparklesIcon class="w-6 h-6" /> เข้าสู่เว็บไซต์
-      </button>
+      </button> -->
     </div>
 
     <div

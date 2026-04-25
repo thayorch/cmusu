@@ -67,34 +67,37 @@
           </span>
         </div>
       </Router-Link>
-      <div
-        class="glass group cursor-pointer flex flex-col items-center justify-center py-16 px-6 text-center rounded-[2rem] hover:-translate-y-2 hover:shadow-xl transition-all duration-300 relative overflow-hidden"
-      >
-        <div
-          class="absolute bottom-0 left-0 -ml-16 -mb-16 w-48 h-48 rounded-full bg-gradient-to-tr from-[#ff6ec7] to-[#ffd166] opacity-10 blur-2xl pointer-events-none group-hover:opacity-20 transition-opacity"
-        ></div>
 
+      <Router-Link to="/borrow-faculty">
         <div
-          class="w-20 h-20 rounded-full bg-[#FF6EC7]/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"
+          class="glass group cursor-pointer flex flex-col items-center justify-center py-16 px-6 text-center rounded-[2rem] hover:-translate-y-2 hover:shadow-xl transition-all duration-300 relative overflow-hidden"
         >
-          <BuildingOfficeIcon class="w-10 h-10 text-[#FF6EC7]" />
+          <div
+            class="absolute bottom-0 left-0 -ml-16 -mb-16 w-48 h-48 rounded-full bg-gradient-to-tr from-[#ff6ec7] to-[#ffd166] opacity-10 blur-2xl pointer-events-none group-hover:opacity-20 transition-opacity"
+          ></div>
+
+          <div
+            class="w-20 h-20 rounded-full bg-[#FF6EC7]/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300"
+          >
+            <BuildingOfficeIcon class="w-10 h-10 text-[#FF6EC7]" />
+          </div>
+          <h3 class="text-2xl font-black text-dark mb-3">ครุภัณฑ์ส่วนคณะ</h3>
+          <p
+            class="text-sm font-light max-w-xs mx-auto mb-8"
+            style="color: #8b7bae"
+          >
+            อุปกรณ์สนับสนุนกิจกรรมสโมสรนักศึกษาคณะ
+          </p>
+          <span
+            class="inline-flex items-center gap-2 text-sm font-bold text-[#FF6EC7]"
+          >
+            ดูรายการครุภัณฑ์
+            <ArrowRightIcon
+              class="w-4 h-4 group-hover:translate-x-1 transition-transform"
+            />
+          </span>
         </div>
-        <h3 class="text-2xl font-black text-dark mb-3">ครุภัณฑ์ส่วนคณะ</h3>
-        <p
-          class="text-sm font-light max-w-xs mx-auto mb-8"
-          style="color: #8b7bae"
-        >
-          อุปกรณ์สนับสนุนกิจกรรมสโมสรนักศึกษาคณะ
-        </p>
-        <span
-          class="inline-flex items-center gap-2 text-sm font-bold text-[#FF6EC7]"
-        >
-          ดูรายการครุภัณฑ์
-          <ArrowRightIcon
-            class="w-4 h-4 group-hover:translate-x-1 transition-transform"
-          />
-        </span>
-      </div>
+      </Router-Link>
     </div>
   </section>
 </template>

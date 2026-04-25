@@ -230,6 +230,7 @@
                         class="hidden"
                       />
                     </label>
+                    
                     <span v-if="isUploading" class="text-xs text-blue-500 animate-pulse font-bold">
                       กำลังอัปโหลด...
                     </span>
@@ -280,8 +281,10 @@ import {
   PhotoIcon,
 } from "@heroicons/vue/24/solid";
 import { useAlert } from "../../composables/useAlert";
+import { useCsrf } from "../../composables/useCsrf";
 
 const { showAlert, showConfirm } = useAlert();
+const { getCsrfToken } = useCsrf();
 
 const equipments = ref([]);
 const isLoadingEq = ref(false);
@@ -298,12 +301,6 @@ const formEq = reactive({
   image_url: "",
   total_quantity: 1,
 });
-
-const getCsrfToken = async () => {
-  const res = await fetch("/api/csrf-token", { method: "GET", credentials: "include" });
-  const data = await res.json();
-  return data.csrf_token;
-};
 
 const fetchEquipments = async () => {
   isLoadingEq.value = true;

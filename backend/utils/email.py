@@ -1,28 +1,18 @@
 import os
-import base64
+import asyncio
+import smtplib
+import ssl
+import traceback
+import httpx
 from pathlib import Path
 from typing import List
-from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 
-conf = ConnectionConfig(
-    MAIL_USERNAME=os.getenv("MAIL_USERNAME", ""),
-    MAIL_PASSWORD=os.getenv("MAIL_PASSWORD", ""),
-    MAIL_FROM=os.getenv("MAIL_FROM", ""),
-    MAIL_FROM_NAME=os.getenv("MAIL_FROM_NAME", "สโมสรนักศึกษา มช."),
-    MAIL_PORT=int(os.getenv("MAIL_PORT", 587)),
-    MAIL_SERVER=os.getenv("MAIL_SERVER", "smtp.gmail.com"),
-    MAIL_STARTTLS=True,
-    MAIL_SSL_TLS=False,
-    USE_CREDENTIALS=True,
-    VALIDATE_CERTS=True,
-)
-
-# Embed logo once at import time — avoids file I/O per email
-_LOGO_PATH = Path(__file__).parent.parent.parent / "frontend" / "public" / "logo-circle.png"
-_LOGO_SRC = ""
-if _LOGO_PATH.exists():
-    _b64 = base64.b64encode(_LOGO_PATH.read_bytes()).decode()
-    _LOGO_SRC = f"data:image/png;base64,{_b64}"
+_LOGO_PATH = Path(__file__).parent / "logo-circle.png"
+_LOGO_BYTES: bytes | None = _LOGO_PATH.read_bytes() if _LOGO_PATH.exists() else None
+_LOGO_CID = "cmusu_logo"
 
 _STATUS_META = {
     "approved": {
@@ -97,6 +87,45 @@ def _build_items_html(items: List[dict]) -> str:
     </tr>"""
 
 
+def _build_social_html() -> str:
+    icons = [
+        ("SOCIAL_FACEBOOK",  "#1877F2", "f",   "Facebook"),
+        ("SOCIAL_INSTAGRAM", "#E1306C", "&#x1F4F7;", "Instagram"),
+        ("SOCIAL_LINE",      "#06C755", "L",   "LINE"),
+        ("SOCIAL_YOUTUBE",   "#FF0000", "&#x25B6;", "YouTube"),
+    ]
+    cells = ""
+    for env_key, color, symbol, label in icons:
+        url = os.getenv(env_key, "")
+        if not url:
+            continue
+        cells += f"""
+        <td style="padding:0 5px;">
+          <a href="{url}" target="_blank" style="display:block;text-decoration:none;">
+            <table cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="width:36px;height:36px;background:{color};border-radius:50%;
+                           text-align:center;vertical-align:middle;">
+                  <span style="color:#ffffff;font-size:16px;font-weight:900;
+                               line-height:36px;display:block;">{symbol}</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="text-align:center;padding-top:4px;">
+                  <span style="font-size:10px;color:#9ca3af;">{label}</span>
+                </td>
+              </tr>
+            </table>
+          </a>
+        </td>"""
+    if not cells:
+        return ""
+    return f"""
+    <table cellpadding="0" cellspacing="0" style="margin:16px auto 0;">
+      <tr>{cells}</tr>
+    </table>"""
+
+
 def _build_html(
     full_name: str,
     status: str,
@@ -108,9 +137,15 @@ def _build_html(
     items_section = _build_items_html(items)
 
     logo_html = (
-        f'<img src="{_LOGO_SRC}" width="72" height="72" '
+        f'<img src="cid:{_LOGO_CID}" width="72" height="72" '
         f'style="width:72px;height:72px;border-radius:50%;border:3px solid rgba(255,255,255,0.4);margin-bottom:12px;display:block;margin-left:auto;margin-right:auto;" />'
-        if _LOGO_SRC
+        if _LOGO_BYTES
+        else ""
+    )
+    logo_html_sm = (
+        f'<img src="cid:{_LOGO_CID}" width="36" height="36" '
+        f'style="width:36px;height:36px;border-radius:50%;border:3px solid rgba(255,255,255,0.4);margin-bottom:8px;display:block;margin-left:auto;margin-right:auto;" />'
+        if _LOGO_BYTES
         else ""
     )
 
@@ -131,10 +166,10 @@ def _build_html(
           <tr>
             <td style="background:linear-gradient(135deg,#a259ff 0%,#6a0dad 100%);padding:36px 40px 28px;text-align:center;">
               {logo_html}
-              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.75);letter-spacing:2px;text-transform:uppercase;">
+              <p style="margin:0;font-size:12px;color:rgb(0,0,0);letter-spacing:2px;text-transform:uppercase;">
                 สโมสรนักศึกษา มหาวิทยาลัยเชียงใหม่
               </p>
-              <h1 style="margin:6px 0 0;font-size:22px;font-weight:900;color:#fff;letter-spacing:0.5px;">
+              <h1 style="margin:6px 0 0;font-size:22px;font-weight:900;color:rgb(0,0,0);letter-spacing:0.5px;">
                 ระบบยืม-คืนอุปกรณ์
               </h1>
             </td>
@@ -142,7 +177,7 @@ def _build_html(
 
           <!-- Status Badge -->
           <tr>
-            <td style="padding:28px 40px 0;text-align:center;">
+            <td style="padding:0 40px 0;text-align:center;">
               <div style="display:inline-block;background:{meta['bg']};
                           border:1.5px solid {meta['border']};border-radius:50px;padding:10px 28px;">
                 <span style="font-size:16px;">{meta['icon']}</span>
@@ -193,8 +228,7 @@ def _build_html(
           <tr>
             <td style="padding:28px 40px 32px;text-align:center;">
               <hr style="border:none;border-top:1px solid #f3f4f6;margin:0 0 20px;" />
-              {logo_html.replace('width:72px;height:72px', 'width:36px;height:36px').replace('width="72" height="72"', 'width="36" height="36"').replace('margin-bottom:12px;', 'margin-bottom:8px;') if _LOGO_SRC else ""}
-              <p style="margin:8px 0 0;font-size:12px;color:#9ca3af;line-height:1.8;">
+              <p style="margin:14px 0 0;font-size:12px;color:#9ca3af;line-height:1.8;">
                 อีเมลนี้ส่งโดยอัตโนมัติจากระบบสโมสรนักศึกษา มช.<br>
                 กรุณาอย่าตอบกลับอีเมลนี้
               </p>
@@ -209,6 +243,32 @@ def _build_html(
 </html>"""
 
 
+async def _fetch_bytes(url: str) -> bytes | None:
+    try:
+        async with httpx.AsyncClient(timeout=8) as client:
+            r = await client.get(url)
+            r.raise_for_status()
+            return r.content
+    except Exception as e:
+        print(f"⚠️ Could not fetch image {url}: {e}")
+        return None
+
+
+def _send_smtp(msg: MIMEMultipart) -> None:
+    username = os.getenv("MAIL_USERNAME", "").strip()
+    password = os.getenv("MAIL_PASSWORD", "").strip()
+    server   = os.getenv("MAIL_SERVER", "smtp.gmail.com").strip()
+    port     = int(os.getenv("MAIL_PORT", "587").strip())
+    context  = ssl.create_default_context()
+    print(f"📧 Connecting to {server}:{port} as {username}")
+    with smtplib.SMTP(server, port) as smtp:
+        smtp.ehlo()
+        smtp.starttls(context=context)
+        smtp.ehlo()
+        smtp.login(username, password)
+        smtp.send_message(msg)
+
+
 async def send_status_email(
     to_email: str,
     full_name: str,
@@ -221,16 +281,50 @@ async def send_status_email(
         print("⚠️  MAIL_USERNAME not set — skipping email")
         return
 
-    meta = _STATUS_META.get(status, _STATUS_META["pending"])
-    message = MessageSchema(
-        subject=f"[สโมสรนักศึกษา มช.] {meta['icon']} สถานะคำร้องยืมอุปกรณ์: {meta['label']}",
-        recipients=[to_email],
-        body=_build_html(full_name, status, borrow_date, return_date, items or []),
-        subtype=MessageType.html,
+    # ดาวน์โหลดรูปแต่ละชิ้นพร้อมกัน
+    item_list = items or []
+    image_bytes_list = await asyncio.gather(
+        *[_fetch_bytes(item.get("image_url", "")) for item in item_list]
     )
+
+    # กำหนด cid สำหรับแต่ละรูปที่โหลดสำเร็จ
+    cid_items = []
+    inline_images: list[tuple[str, bytes]] = []  # (cid, bytes)
+    for i, (item, img_bytes) in enumerate(zip(item_list, image_bytes_list)):
+        cid = f"eq_img_{i}"
+        if img_bytes:
+            inline_images.append((cid, img_bytes))
+            cid_items.append({**item, "image_url": f"cid:{cid}"})
+        else:
+            cid_items.append({**item, "image_url": ""})
+
+    meta = _STATUS_META.get(status, _STATUS_META["pending"])
+    html_body = _build_html(full_name, status, borrow_date, return_date, cid_items)
+
+    # multipart/related — HTML เป็น child ตรง ๆ รูปทุกรูปอยู่ระดับเดียวกัน
+    # (ถ้าซ้อน alternative ใน related บาง client หา CID ไม่เจอ)
+    msg = MIMEMultipart("related", type="text/html")
+    msg["Subject"] = f"[สโมสรนักศึกษา มช.] {meta['icon']} สถานะคำร้องยืมอุปกรณ์: {meta['label']}"
+    msg["From"]    = f"{os.getenv('MAIL_FROM_NAME', 'สโมสรนักศึกษา มช.')} <{os.getenv('MAIL_FROM', '')}>"
+    msg["To"]      = to_email
+
+    msg.attach(MIMEText(html_body, "html", "utf-8"))
+
+    if _LOGO_BYTES:
+        mime_logo = MIMEImage(_LOGO_BYTES)
+        mime_logo.add_header("Content-ID", f"<{_LOGO_CID}>")
+        mime_logo.add_header("Content-Disposition", "inline")
+        msg.attach(mime_logo)
+
+    for cid, img_bytes in inline_images:
+        mime_img = MIMEImage(img_bytes)
+        mime_img.add_header("Content-ID", f"<{cid}>")
+        mime_img.add_header("Content-Disposition", "inline")
+        msg.attach(mime_img)
+
     try:
-        fm = FastMail(conf)
-        await fm.send_message(message)
+        await asyncio.to_thread(_send_smtp, msg)
         print(f"✅ Email sent to {to_email} [{status}]")
     except Exception as e:
         print(f"❌ Failed to send email to {to_email}: {e}")
+        traceback.print_exc()

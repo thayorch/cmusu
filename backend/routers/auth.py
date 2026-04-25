@@ -32,8 +32,7 @@ async def callback(code: Optional[str] = None):
         session = supabase.auth.exchange_code_for_session({"auth_code": code})
         access_token = session.session.access_token
         
-        # กลับไปหน้ายืมของฝั่ง Frontend
-        response = RedirectResponse(url=f"{FRONTEND_URL}/borrow-central")
+        response = RedirectResponse(url=f"{FRONTEND_URL}/admin")
         
         # ฝัง Token ป้องกัน XSS
         response.set_cookie(
