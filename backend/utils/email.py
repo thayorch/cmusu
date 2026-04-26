@@ -87,44 +87,6 @@ def _build_items_html(items: List[dict]) -> str:
     </tr>"""
 
 
-def _build_social_html() -> str:
-    icons = [
-        ("SOCIAL_FACEBOOK",  "#1877F2", "f",   "Facebook"),
-        ("SOCIAL_INSTAGRAM", "#E1306C", "&#x1F4F7;", "Instagram"),
-        ("SOCIAL_LINE",      "#06C755", "L",   "LINE"),
-        ("SOCIAL_YOUTUBE",   "#FF0000", "&#x25B6;", "YouTube"),
-    ]
-    cells = ""
-    for env_key, color, symbol, label in icons:
-        url = os.getenv(env_key, "")
-        if not url:
-            continue
-        cells += f"""
-        <td style="padding:0 5px;">
-          <a href="{url}" target="_blank" style="display:block;text-decoration:none;">
-            <table cellpadding="0" cellspacing="0">
-              <tr>
-                <td style="width:36px;height:36px;background:{color};border-radius:50%;
-                           text-align:center;vertical-align:middle;">
-                  <span style="color:#ffffff;font-size:16px;font-weight:900;
-                               line-height:36px;display:block;">{symbol}</span>
-                </td>
-              </tr>
-              <tr>
-                <td style="text-align:center;padding-top:4px;">
-                  <span style="font-size:10px;color:#9ca3af;">{label}</span>
-                </td>
-              </tr>
-            </table>
-          </a>
-        </td>"""
-    if not cells:
-        return ""
-    return f"""
-    <table cellpadding="0" cellspacing="0" style="margin:16px auto 0;">
-      <tr>{cells}</tr>
-    </table>"""
-
 
 def _build_html(
     full_name: str,
@@ -166,7 +128,7 @@ def _build_html(
           <tr>
             <td style="background:linear-gradient(135deg,#a259ff 0%,#6a0dad 100%);padding:36px 40px 28px;text-align:center;">
               {logo_html}
-              <p style="margin:0;font-size:12px;color:rgb(0,0,0);letter-spacing:2px;text-transform:uppercase;">
+              <p style="margin:0;font-size:12px;color:rgb(0,0,0);text-transform:uppercase;">
                 สโมสรนักศึกษา มหาวิทยาลัยเชียงใหม่
               </p>
               <h1 style="margin:6px 0 0;font-size:22px;font-weight:900;color:rgb(0,0,0);letter-spacing:0.5px;">
@@ -211,12 +173,12 @@ def _build_html(
                 <tr>
                   <td style="padding:16px 20px;border-right:1px solid #e5e7eb;width:50%;text-align:center;">
                     <p style="margin:0;font-size:10px;color:#9ca3af;text-transform:uppercase;
-                               letter-spacing:1.5px;font-weight:700;">วันที่ยืม</p>
+                               font-weight:700;">วันที่ยืม</p>
                     <p style="margin:6px 0 0;font-size:17px;font-weight:900;color:#1f2937;">{borrow_date}</p>
                   </td>
                   <td style="padding:16px 20px;width:50%;text-align:center;">
                     <p style="margin:0;font-size:10px;color:#9ca3af;text-transform:uppercase;
-                               letter-spacing:1.5px;font-weight:700;">วันที่คืน</p>
+                               font-weight:700;">วันที่คืน</p>
                     <p style="margin:6px 0 0;font-size:17px;font-weight:900;color:#a259ff;">{return_date}</p>
                   </td>
                 </tr>
@@ -229,7 +191,7 @@ def _build_html(
             <td style="padding:28px 40px 32px;text-align:center;">
               <hr style="border:none;border-top:1px solid #f3f4f6;margin:0 0 20px;" />
               <p style="margin:14px 0 0;font-size:12px;color:#9ca3af;line-height:1.8;">
-                อีเมลนี้ส่งโดยอัตโนมัติจากระบบสโมสรนักศึกษา มช.<br>
+                อีเมลนี้ส่งโดยอัตโนมัติจากระบบสโมสรนักศึกษา มหาวิทยาลัยเชียงใหม่<br>
                 กรุณาอย่าตอบกลับอีเมลนี้
               </p>
             </td>
