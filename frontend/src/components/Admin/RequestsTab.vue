@@ -59,7 +59,7 @@
           <!-- Status dropdown -->
           <div class="relative">
             <button
-              @click="toggleDropdown(req.id)"
+              @click="toggleDropdown(req.id, $event)"
               :disabled="req.status === 'returned'"
               class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border transition-all"
               :class="[statusStyle(req.status).btn, req.status === 'returned' ? 'cursor-not-allowed opacity-70' : 'cursor-pointer']"
@@ -81,7 +81,8 @@
             >
               <div
                 v-if="openDropdownId === req.id"
-                class="absolute z-50 mt-1 min-w-[160px] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
+                class="absolute z-50 min-w-[160px] bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden"
+                :class="dropdownUp ? 'bottom-full mb-1' : 'mt-1'"
               >
                 <button
                   v-for="opt in statusOptions"
@@ -128,6 +129,7 @@ const { getCsrfToken } = useCsrf();
 
 const borrowRequests = ref([]);
 const openDropdownId = ref(null);
+const dropdownUp = ref(false);
 
 const statusOptions = [
   {
@@ -159,8 +161,14 @@ const statusLabel = (status) =>
 const statusStyle = (status) =>
   statusOptions.find((o) => o.value === status) ?? statusOptions[0];
 
-const toggleDropdown = (id) => {
-  openDropdownId.value = openDropdownId.value === id ? null : id;
+const toggleDropdown = (id, event) => {
+  if (openDropdownId.value === id) {
+    openDropdownId.value = null;
+    return;
+  }
+  const rect = event.currentTarget.getBoundingClientRect();
+  dropdownUp.value = window.innerHeight - rect.bottom < 200;
+  openDropdownId.value = id;
 };
 
 onMounted(() => {
