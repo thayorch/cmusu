@@ -32,15 +32,14 @@ async def callback(code: Optional[str] = None):
         session = supabase.auth.exchange_code_for_session({"auth_code": code})
         access_token = session.session.access_token
         
-        response = RedirectResponse(url=f"{FRONTEND_URL}/admin")
-        
+        response = RedirectResponse(url=f"{FRONTEND_URL}/borrow-central")
         # ฝัง Token ป้องกัน XSS
         response.set_cookie(
-            key="access_token", 
-            value=access_token, 
-            httponly=True, 
-            secure=False, # ถ้าขึ้น Production (HTTPS) ค่อยแก้เป็น True
-            samesite="lax", 
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=True,
+            samesite="lax",
             max_age=3600
         )
         return response
