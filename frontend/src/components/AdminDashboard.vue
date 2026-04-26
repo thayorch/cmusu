@@ -10,114 +10,89 @@
     v-else-if="isAdmin"
     class="relative z-10 max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10 flex flex-col md:flex-row gap-6 md:gap-8"
   >
-    <div class="w-full md:w-64 shrink-0">
-      <div
-        class="glass p-4 md:p-6 rounded-3xl md:sticky md:top-24 shadow-sm z-20"
-      >
-        <div class="flex items-center md:flex-col gap-4 md:gap-0 mb-4 md:mb-6">
+    <!-- Mobile top bar -->
+    <div class="md:hidden glass p-4 rounded-3xl shadow-sm">
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <div class="flex items-center gap-3">
           <div
-            class="w-12 h-12 md:w-16 md:h-16 shrink-0 bg-gradient-to-br from-[#ff6ec7] to-[#a259ff] rounded-full flex items-center justify-center md:mx-auto md:mb-3 shadow-lg"
+            class="w-10 h-10 shrink-0 bg-gradient-to-br from-[#ff6ec7] to-[#a259ff] rounded-full flex items-center justify-center shadow-lg"
           >
-            <ShieldCheckIcon class="w-6 h-6 md:w-8 md:h-8 text-white" />
+            <ShieldCheckIcon class="w-5 h-5 text-white" />
           </div>
-          <div class="text-left md:text-center">
-            <h2 class="font-black text-lg md:text-xl text-dark">Admin Panel</h2>
-            <p class="text-xs text-gray-500">CMUSU Control Center</p>
+          <div>
+            <h2 class="font-black text-base text-dark leading-tight">Admin Panel</h2>
+            <p class="text-[11px] text-gray-500">CMUSU Control Center</p>
           </div>
         </div>
-
-        <nav
-          class="flex flex-row md:flex-col gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide"
+        <button
+          @click="logout"
+          class="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-red-500 bg-red-50 border border-red-100 hover:bg-red-100 transition-colors"
         >
-          <button
-            @click="activeTab = 'equipment'"
-            :class="
-              activeTab === 'equipment'
-                ? 'bg-[#a259ff] text-white shadow-md'
-                : 'hover:bg-gray-100 text-gray-600 bg-white/50 md:bg-transparent'
-            "
-            class="shrink-0 whitespace-nowrap w-auto md:w-full flex items-center gap-2 md:gap-3 px-4 py-2.5 md:py-3 rounded-xl text-sm font-bold transition-all border md:border-none border-gray-100"
-          >
-            <ArchiveBoxIcon class="w-4 h-4 md:w-5 md:h-5" /> จัดการครุภัณฑ์
-          </button>
+          <PowerIcon class="w-4 h-4" />
+          ออกจากระบบ
+        </button>
+      </div>
 
-          <button
-            @click="activeTab = 'requests'"
-            :class="
-              activeTab === 'requests'
-                ? 'bg-[#ffd166] text-gray-900 shadow-md'
-                : 'hover:bg-gray-100 text-gray-600 bg-white/50 md:bg-transparent'
-            "
-            class="shrink-0 whitespace-nowrap w-auto md:w-full flex items-center gap-2 md:gap-3 px-4 py-2.5 md:py-3 rounded-xl text-sm font-bold transition-all border md:border-none border-gray-100"
-          >
-            <ClipboardDocumentListIcon class="w-4 h-4 md:w-5 md:h-5" />
-            รายการขอยืม
-          </button>
+      <nav class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          @click="activeTab = tab.id"
+          :class="
+            activeTab === tab.id
+              ? [tab.activeClass, 'shadow-md']
+              : 'text-gray-600 bg-white/60 border border-gray-100'
+          "
+          class="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all"
+        >
+          <component :is="tab.icon" class="w-3.5 h-3.5" />
+          {{ tab.label }}
+        </button>
+      </nav>
+    </div>
 
-          <button
-            @click="activeTab = 'news'"
-            :class="
-              activeTab === 'news'
-                ? 'bg-[#ff6ec7] text-white shadow-md'
-                : 'hover:bg-gray-100 text-gray-600 bg-white/50 md:bg-transparent'
-            "
-            class="shrink-0 whitespace-nowrap w-auto md:w-full flex items-center gap-2 md:gap-3 px-4 py-2.5 md:py-3 rounded-xl text-sm font-bold transition-all border md:border-none border-gray-100"
+    <!-- Desktop sidebar -->
+    <div class="hidden md:block w-64 shrink-0">
+      <div class="glass p-6 rounded-3xl sticky top-24 shadow-sm">
+        <div class="flex flex-col items-center mb-6">
+          <div
+            class="w-16 h-16 bg-gradient-to-br from-[#ff6ec7] to-[#a259ff] rounded-full flex items-center justify-center mb-3 shadow-lg"
           >
-            <NewspaperIcon class="w-4 h-4 md:w-5 md:h-5" />
-            ข่าวสาร
-          </button>
+            <ShieldCheckIcon class="w-8 h-8 text-white" />
+          </div>
+          <h2 class="font-black text-xl text-dark">Admin Panel</h2>
+          <p class="text-xs text-gray-500">CMUSU Control Center</p>
+        </div>
 
+        <nav class="flex flex-col gap-2">
           <button
-            @click="activeTab = 'activity'"
+            v-for="tab in tabs"
+            :key="tab.id"
+            @click="activeTab = tab.id"
             :class="
-              activeTab === 'activity'
-                ? 'bg-[#ffd166] text-gray-900 shadow-md'
-                : 'hover:bg-gray-100 text-gray-600 bg-white/50 md:bg-transparent'
+              activeTab === tab.id
+                ? [tab.activeClass, 'shadow-md']
+                : 'hover:bg-gray-100 text-gray-600'
             "
-            class="shrink-0 whitespace-nowrap w-auto md:w-full flex items-center gap-2 md:gap-3 px-4 py-2.5 md:py-3 rounded-xl text-sm font-bold transition-all border md:border-none border-gray-100"
+            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all"
           >
-            <CalendarDaysIcon class="w-4 h-4 md:w-5 md:h-5" />
-            กิจกรรม
-          </button>
-
-          <button
-            @click="activeTab = 'faculty-equipment'"
-            :class="
-              activeTab === 'faculty-equipment'
-                ? 'bg-[#43b89c] text-white shadow-md'
-                : 'hover:bg-gray-100 text-gray-600 bg-white/50 md:bg-transparent'
-            "
-            class="shrink-0 whitespace-nowrap w-auto md:w-full flex items-center gap-2 md:gap-3 px-4 py-2.5 md:py-3 rounded-xl text-sm font-bold transition-all border md:border-none border-gray-100"
-          >
-            <BuildingLibraryIcon class="w-4 h-4 md:w-5 md:h-5" />
-            ครุภัณฑ์คณะ
-          </button>
-
-          <button
-            @click="activeTab = 'reports'"
-            :class="
-              activeTab === 'reports'
-                ? 'bg-gray-700 text-white shadow-md'
-                : 'hover:bg-gray-100 text-gray-600 bg-white/50 md:bg-transparent'
-            "
-            class="shrink-0 whitespace-nowrap w-auto md:w-full flex items-center gap-2 md:gap-3 px-4 py-2.5 md:py-3 rounded-xl text-sm font-bold transition-all border md:border-none border-gray-100"
-          >
-            <MegaphoneIcon class="w-4 h-4 md:w-5 md:h-5" />
-            VOC
+            <component :is="tab.icon" class="w-5 h-5" />
+            {{ tab.label }}
           </button>
 
           <button
             @click="logout"
-            class="hover:bg-gray-100 text-red-600 bg-white/50 md:bg-transparent shrink-0 whitespace-nowrap w-auto md:w-full flex items-center gap-2 md:gap-3 px-4 py-2.5 md:py-3 rounded-xl text-sm font-bold transition-all border md:border-none border-gray-100"
+            class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-red-600 hover:bg-gray-100 transition-all"
           >
-            <PowerIcon class="w-4 h-4 md:w-5 md:h-5" />
+            <PowerIcon class="w-5 h-5" />
             ออกจากระบบ
           </button>
         </nav>
       </div>
     </div>
 
-    <div class="flex-1 w-full max-w-full overflow-hidden">
+    <!-- Content -->
+    <div class="flex-1 min-w-0 overflow-hidden">
       <EquipmentTab v-if="activeTab === 'equipment'" />
       <RequestsTab v-if="activeTab === 'requests'" />
       <NewsTab v-if="activeTab === 'news'" />
@@ -156,6 +131,16 @@ const router = useRouter();
 const activeTab = ref("equipment");
 const isAdmin = ref(false);
 const isChecking = ref(true);
+
+const tabs = [
+  { id: "equipment",         label: "จัดการครุภัณฑ์", icon: ArchiveBoxIcon,             activeClass: "bg-[#a259ff] text-white" },
+  { id: "requests",          label: "รายการขอยืม",     icon: ClipboardDocumentListIcon,  activeClass: "bg-[#ffd166] text-gray-900" },
+  { id: "news",              label: "ข่าวสาร",          icon: NewspaperIcon,              activeClass: "bg-[#ff6ec7] text-white" },
+  { id: "activity",          label: "กิจกรรม",          icon: CalendarDaysIcon,           activeClass: "bg-[#ffd166] text-gray-900" },
+  { id: "faculty-equipment", label: "ครุภัณฑ์คณะ",     icon: BuildingLibraryIcon,        activeClass: "bg-[#43b89c] text-white" },
+  { id: "reports",           label: "VOC",              icon: MegaphoneIcon,              activeClass: "bg-gray-700 text-white" },
+];
+
 const logout = async () => {
   await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
   window.location.reload();

@@ -23,8 +23,21 @@
       </button>
     </div>
 
-    <!-- Faculty filter -->
-    <div class="flex flex-wrap gap-2 mb-5">
+    <!-- Faculty filter: mobile select -->
+    <div class="sm:hidden mb-5">
+      <select
+        v-model="selectedFacultyFilter"
+        class="w-full px-4 py-2.5 rounded-xl bg-white border border-gray-200 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#43b89c]/40 focus:border-[#43b89c] transition-all"
+      >
+        <option value="">ทั้งหมด ({{ items.length }})</option>
+        <option v-for="f in FACULTIES" :key="f.id" :value="f.id">
+          {{ f.id }} · {{ f.shortName }}{{ countByFaculty[f.id] ? ` (${countByFaculty[f.id]})` : '' }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Faculty filter: desktop buttons -->
+    <div class="hidden sm:flex flex-wrap gap-2 mb-5">
       <button
         @click="selectedFacultyFilter = ''"
         :class="

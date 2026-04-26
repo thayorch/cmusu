@@ -121,7 +121,7 @@
                   />
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label class="block text-sm font-bold mb-1.5 text-gray-700">
                       กลุ่มเดือน <span class="text-red-500">*</span>
@@ -148,7 +148,7 @@
                   </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label class="block text-sm font-bold mb-1.5 text-gray-700">
                       ช่วงเวลา (Phase) <span class="text-red-500">*</span>
@@ -184,7 +184,7 @@
 
                 <IconPicker v-model="form.icon_name" :preview-color="form.item_color" />
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label class="block text-sm font-bold mb-1.5 text-gray-700">สีรายการ</label>
                     <div class="flex items-center gap-2">
