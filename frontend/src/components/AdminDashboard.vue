@@ -92,7 +92,7 @@
     </div>
 
     <!-- Content -->
-    <div class="flex-1 min-w-0 overflow-hidden">
+    <div class="flex-1 min-w-0">
       <EquipmentTab v-if="activeTab === 'equipment'" />
       <RequestsTab v-if="activeTab === 'requests'" />
       <NewsTab v-if="activeTab === 'news'" />
