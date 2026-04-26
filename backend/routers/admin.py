@@ -6,7 +6,7 @@ import traceback
 from db.database import supabase
 from dependencies import admin_required
 
-from models.schemas import EquipmentCreate, FacultyEquipmentCreate, NewsCreate, ActivityCreate, UpdateStatus
+from models.schemas import EquipmentCreate, FacultyEquipmentCreate, NewsCreate, ActivityCreate, UpdateStatus, PromoteRequest
 from utils.email import send_status_email
 
 
@@ -346,3 +346,43 @@ async def get_all_reports():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# =========================================
+# 
+# =========================================
+@router.post('/admin/promote')
+async def promote_to_admin(request: Request, payload: PromoteRequest, csrf_protect: CsrfProtect = Depends()):
+    """ ค้นหา User จาก Email ในระบบ Auth และอัปเดต Role เป็น Admin """
+    
+    await csrf_protect.validate_csrf(request)
+    
+    try:
+        email_target = payload.email.strip().lower()
+        
+        # 1. ดึงรายชื่อ User ทั้งหมดจากระบบ Auth (Admin API)
+        # หมายเหตุ: สำหรับระบบที่มีผู้ใช้จำนวนมาก อาจต้องทำ Pagination
+        users_res = supabase.auth.admin.list_users()
+        
+        # 2. ค้นหา User ที่มี Email ตรงกัน
+        target_user = next((u for u in users_res if u.email == email_target), None)
+        
+        if not target_user:
+            return {
+                "status": "error", 
+                "message": "ไม่พบอีเมลนี้ในระบบสมาชิก กรุณาตรวจสอบว่าผู้ใช้เคยสมัครใช้งานหรือยัง"
+            }
+            
+        # 3. อัปเดต app_metadata โดยตรงที่ตัว User ใน Auth Schema
+        # เราจะนำ metadata เดิมมา merge กับ role ใหม่ เพื่อไม่ให้ข้อมูลอื่นหาย
+        current_metadata = target_user.app_metadata or {}
+        new_metadata = {**current_metadata, "role": "admin"}
+        
+        supabase.auth.admin.update_user_by_id(
+            target_user.id,
+            attributes={"app_metadata": new_metadata}
+        )
+        
+        return {"status": "success", "message": f"ยกระดับสิทธิ์ให้ {email_target} เป็น Admin สำเร็จ"}
+        
+    except Exception as e:
+        print(f"❌ Promote Error: {e}")
+        return {"status": "error", "message": "เกิดข้อผิดพลาดในการจัดการระบบ Auth"}

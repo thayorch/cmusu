@@ -99,6 +99,7 @@
       <ActivityTab v-if="activeTab === 'activity'" />
       <FacultyEquipmentTab v-if="activeTab === 'faculty-equipment'" />
       <ReportsTab v-if="activeTab === 'reports'" />
+      <AdminRoleTab v-if="activeTab === 'admin-role'" />
     </div>
   </section>
 </template>
@@ -116,6 +117,7 @@ import {
   CalendarDaysIcon,
   PowerIcon,
   BuildingLibraryIcon,
+  UserPlusIcon,
 } from "@heroicons/vue/24/solid";
 
 import EquipmentTab from "./Admin/EquipmentTab.vue";
@@ -124,6 +126,7 @@ import ReportsTab from "./Admin/ReportsTab.vue";
 import NewsTab from "./Admin/NewsTab.vue";
 import ActivityTab from "./Admin/ActivityTab.vue";
 import FacultyEquipmentTab from "./Admin/FacultyEquipmentTab.vue";
+import AdminRoleTab from "./Admin/AdminRoleTab.vue";
 import { useAlert } from "../composables/useAlert";
 
 const { showAlert } = useAlert();
@@ -139,6 +142,7 @@ const tabs = [
   { id: "activity",          label: "กิจกรรม",          icon: CalendarDaysIcon,           activeClass: "bg-[#ffd166] text-gray-900" },
   { id: "faculty-equipment", label: "ครุภัณฑ์คณะ",     icon: BuildingLibraryIcon,        activeClass: "bg-[#43b89c] text-white" },
   { id: "reports",           label: "VOC",              icon: MegaphoneIcon,              activeClass: "bg-gray-700 text-white" },
+  { id: "admin-role",        label: "สิทธิ์แอดมิน",     icon: UserPlusIcon,               activeClass: "bg-[#a259ff] text-white" },
 ];
 
 const logout = async () => {

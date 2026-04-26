@@ -63,3 +63,6 @@ class FacultyEquipmentCreate(BaseModel):
 class UpdateStatus(BaseModel):
     id: str
     status: str
+
+class PromoteRequest(BaseModel):
+    email: str
