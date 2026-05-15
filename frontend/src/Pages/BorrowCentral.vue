@@ -46,12 +46,8 @@
         href="/api/auth/login"
         class="w-full py-4 bg-white hover:bg-gray-50 text-gray-800 font-bold rounded-2xl shadow-sm border flex items-center justify-center gap-3"
       >
-        <img
-          src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg"
-          alt="Microsoft"
-          class="w-5 h-5"
-        />
-        เข้าสู่ระบบด้วย Microsoft
+        <img src="/cmu_logo.png" alt="CMU" class="w-9 h-9" />
+        เข้าสู่ระบบด้วย CMU Account
       </a>
     </div>
 

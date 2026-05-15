@@ -1,4 +1,5 @@
 <template>
+  <Navbar />
   <div
     v-if="!isLogin"
     class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100"
@@ -25,18 +26,8 @@
         href="/api/auth/login"
         class="flex items-center justify-center gap-3 w-full bg-[#a259ff] hover:bg-[#8b3dff] text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg"
       >
-        <svg
-          class="w-5 h-5"
-          viewBox="0 0 21 21"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <rect x="1" y="1" width="9" height="9" fill="#f25022" />
-          <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
-          <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
-          <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
-        </svg>
-        เข้าสู่ระบบด้วย Microsoft
+        <img src="/cmu_logo.png" alt="" class="w-9 h-9" />
+        เข้าสู่ระบบด้วย CMU Account
       </a>
     </div>
   </div>
@@ -47,6 +38,7 @@ import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { ShieldCheckIcon } from "@heroicons/vue/24/solid";
 import { useAlert } from "../composables/useAlert";
+import Navbar from "../components/Navbar.vue";
 
 const router = useRouter();
 const route = useRoute();

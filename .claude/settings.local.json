@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rtk npm *)",
+      "Bash(npm install *)",
+      "Bash(timeout 15 npm run dev)"
+    ]
+  }
+}
